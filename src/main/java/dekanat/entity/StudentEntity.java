@@ -1,8 +1,6 @@
 package dekanat.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,15 +15,34 @@ import lombok.Setter;
 public class StudentEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "surname", nullable = false)
     private String surname;
+
+    @Column(name = "name", nullable = false)
     private String name;
+
+    @Column(name = "patronymic")
     private String patronymic;
+
+    @Column(name = "`group`", nullable = false)
     private String group;
+
+    @Column(name = "course", nullable = false)
     private String course;
+
+    @Column(name = "number", nullable = false)
     private String number;
+
+    @Column(name = "year", nullable = false)
     private String year;
+
+    @Column(name = "faculty", nullable = false)
     private int faculty;
+
+    @Column(name = "department", nullable = false)
     private int department;
 
 }
