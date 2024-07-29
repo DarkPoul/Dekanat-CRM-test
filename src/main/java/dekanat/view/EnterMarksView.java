@@ -12,12 +12,22 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
+import dekanat.component.MainLayout;
+import dekanat.entity.*;
 import dekanat.model.EnterMarksModel;
+import dekanat.model.PlansModel;
+import dekanat.repository.ControlRepo;
+import dekanat.repository.FacultyRepo;
+import dekanat.repository.MarkRepo;
+import dekanat.repository.SessionRepo;
+import dekanat.service.*;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @PageTitle("Введення оцінок | Деканат")
 @Route(value = "marks", layout = MainLayout.class)
@@ -25,6 +35,16 @@ import java.util.List;
 @UIScope
 @PermitAll
 public class EnterMarksView extends Div {
+
+    private final FacultyRepo facultyRepo;
+    private final DepartmentService departmentService;
+    private final StudentService studentService;
+    private final PlansServices plansServices;
+    private final SessionRepo sessionRepo;
+    private final DiscService discService;
+    private final MarkRepo markRepo;
+    private final ControlRepo controlRepo;
+
     private VerticalLayout mainLayout = new VerticalLayout();
     private HorizontalLayout topLayout = new HorizontalLayout();
     private HorizontalLayout contentLayout = new HorizontalLayout();
@@ -39,8 +59,17 @@ public class EnterMarksView extends Div {
     private Select<String> selectDiscipline = new Select<>();
     private Select<String> selectControlType = new Select<>();
     private Grid<EnterMarksModel> studentGrid = new Grid<>(EnterMarksModel.class, false);
+    private List<PlansModel> plansModels = new ArrayList<>();
 
-    public EnterMarksView() {
+    public EnterMarksView(FacultyRepo facultyRepo, DepartmentService departmentService, StudentService studentService, PlansServices plansServices, SessionRepo sessionRepo, DiscService discService, MarkRepo markRepo, ControlRepo controlRepo) {
+        this.facultyRepo = facultyRepo;
+        this.departmentService = departmentService;
+        this.studentService = studentService;
+        this.plansServices = plansServices;
+        this.sessionRepo = sessionRepo;
+        this.discService = discService;
+        this.markRepo = markRepo;
+        this.controlRepo = controlRepo;
         // Form layout
         selectFaculty.setLabel("Факультет");
         selectFaculty.setItems("Транспортних та інформаційних технологій", "Інші факультети");
@@ -139,5 +168,78 @@ public class EnterMarksView extends Div {
         mainLayout.add(topLayout, contentLayout);
         mainLayout.setSizeFull();
         add(mainLayout);
+
+
+
+        //Backend
+
+        selectFaculty.setItems(facultyRepo.findAll().stream().map(FacultyEntity::getTitle).toList());
+        selectFaculty.addValueChangeListener(event
+                -> selectDepartment.setItems(departmentService.getDepartmentFilterFaculty(selectFaculty.getValue())));
+        selectDepartment.addValueChangeListener(event
+                -> selectSpecialty.setItems(studentService.getGroupTitleFilterFacultyAndDepartment
+                (
+                        selectFaculty.getValue(),
+                        selectDepartment.getValue()
+                )
+        ));
+        selectSpecialty.addValueChangeListener(event -> {
+           selectCourse.setItems(studentService.getGroupCourseFilterFacultyAndDepartmentAndSpec
+                   (
+                           selectFaculty.getValue(),
+                           selectDepartment.getValue(),
+                           selectSpecialty.getValue()
+                   )
+           );
+        });
+        selectCourse.addValueChangeListener(event ->{
+            System.out.println(selectCourse.getValue());
+            selectGroup.setItems(studentService.getGroupNumberFilterFacultyAndDepartmentAndSpecAndCourse
+                    (
+                            selectFaculty.getValue(),
+                            selectDepartment.getValue(),
+                            selectSpecialty.getValue(),
+                            selectCourse.getValue()
+                    )
+            );
+        });
+
+
+        selectGroup.addValueChangeListener(event -> { //todo створити сервіс, та перенести метод
+            StudentEntity student = studentService.getFullGroupTitle(
+                    selectFaculty.getValue(),
+                    selectDepartment.getValue(),
+                    selectSpecialty.getValue(),
+                    selectCourse.getValue(),
+                    selectGroup.getValue()
+            );
+
+            String groupTitle = student.getGroup() + "-" + student.getCourse() + "-" + student.getNumber() + "-" + student.getYear();
+
+            plansModels = plansServices.getStudyPlansForGroup(groupTitle, sessionRepo.findById(1).map(SessionEntity::getSession).orElseThrow());
+
+            selectDiscipline.setItems(plansModels.stream().map(PlansModel::getDisc).collect(Collectors.toList()));
+
+        });
+
+        selectDiscipline.addValueChangeListener(event -> { //todo створити сервіс, та перенести метод
+           long planId = plansModels.get(0).getPlanId();
+           List<MarkEntity> markEntities = markRepo.findAllByPlan(planId);
+           List<String> control = new ArrayList<>();
+           for (MarkEntity markEntity : markEntities){
+               String disc = controlRepo.findById(markEntity.getControl()).getTitle();
+               if (!control.contains(disc)){
+                   control.add(disc);
+               }
+           }
+           selectControlType.setItems(control);
+
+
+        });
+
+
+
+
+
     }
 }

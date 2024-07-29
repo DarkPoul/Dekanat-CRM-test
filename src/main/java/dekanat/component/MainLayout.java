@@ -1,4 +1,4 @@
-package dekanat.view;
+package dekanat.component;
 
 
 import com.vaadin.flow.component.Component;
@@ -18,12 +18,16 @@ import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import dekanat.service.SecurityService;
+import dekanat.view.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 
 public class MainLayout extends AppLayout {
 
+    private final SecurityService securityService;
+
     public MainLayout(@Autowired SecurityService securityService) {
+        this.securityService = securityService;
 
         createHeader();
         createDrawer();
@@ -32,12 +36,11 @@ public class MainLayout extends AppLayout {
     private void createHeader() {
         H1 logo = new H1("Dekanat CRM");
         logo.addClassNames("text-l", "m-m");
+        Button logout = new Button("Вихід", e -> securityService.logout());
 
 
 
-
-
-        HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), logo);
+        HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), logo, logout);
 
 
 
@@ -56,14 +59,12 @@ public class MainLayout extends AppLayout {
         Tabs tabs = new Tabs();
         tabs.add(
                 createTab(VaadinIcon.MENU, "Головна", HomeView.class),
-                createTab(VaadinIcon.BOOK, "Навчальні плани", TrainingPlansView.class)
-//                createTab(VaadinIcon.LINE_BAR_CHART, "Успішність", SuccessView.class),
-//                createTab(VaadinIcon.ABACUS, "Боржники", DebtorView.class),
-//                createTab(VaadinIcon.USER_CARD, "Перегляд інформації", StudentCardView.class),
-//                createTab(VaadinIcon.USER_CARD, "Перегляд карток", ReviewingCardsView.class),
-//                createTab(VaadinIcon.PENCIL, "Введення оцінок", EnterMarksView.class)
-//                createTab(VaadinIcon.BOOK, "Навчальні плани"),
-//                createTab(VaadinIcon.LINE_BAR_CHART, "Успішність"),
+                createTab(VaadinIcon.BOOK, "Навчальні плани", TrainingPlansView.class),
+                createTab(VaadinIcon.LINE_BAR_CHART, "Успішність", SuccessView.class),
+                createTab(VaadinIcon.ABACUS, "Боржники", DebtorView.class),
+                createTab(VaadinIcon.USER_CARD, "Перегляд інформації", StudentCardView.class),
+                createTab(VaadinIcon.USER_CARD, "Перегляд карток", ReviewingCardsView.class),
+                createTab(VaadinIcon.PENCIL, "Введення оцінок", EnterMarksView.class)
 //                createTab(VaadinIcon.ANGLE_DOUBLE_UP, "Переведення на курс"),
 //                createTab(VaadinIcon.PRINT, "Друк інформації"),
 //                createTab(VaadinIcon.BAR_CHART_H, "Модульний контроль"),

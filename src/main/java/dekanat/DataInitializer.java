@@ -19,15 +19,19 @@ public class DataInitializer implements CommandLineRunner {
     private final ControlRepo controlRepo;
     private final DiscRepo discRepo;
     private final DepartmentRepo departmentRepo;
+    private final FacultyRepo facultyRepo;
+    private final SessionRepo sessionRepo;
 
     @Autowired
-    public DataInitializer(UserRepository userRepository, StudentRepo studentRepo, PasswordEncoder passwordEncoder, ControlRepo controlRepo, DiscRepo discRepo, DepartmentRepo departmentRepo) {
+    public DataInitializer(UserRepository userRepository, StudentRepo studentRepo, PasswordEncoder passwordEncoder, ControlRepo controlRepo, DiscRepo discRepo, DepartmentRepo departmentRepo, FacultyRepo facultyRepo, SessionRepo sessionRepo) {
         this.userRepository = userRepository;
         this.studentRepo = studentRepo;
         this.passwordEncoder = passwordEncoder;
         this.controlRepo = controlRepo;
         this.discRepo = discRepo;
         this.departmentRepo = departmentRepo;
+        this.facultyRepo = facultyRepo;
+        this.sessionRepo = sessionRepo;
     }
 
     @Override
@@ -76,7 +80,7 @@ public class DataInitializer implements CommandLineRunner {
             ControlEntity controlEntity5 = new ControlEntity(5L, "Курсовий проєкт", "2");
             ControlEntity controlEntity6 = new ControlEntity(6L, "Розрахункова робота", "2");
             ControlEntity controlEntity7 = new ControlEntity(7L, "Розрахунково-графічна робота", "2");
-            ControlEntity controlEntity8 = new ControlEntity(7L, "Відсутній", "2");
+            ControlEntity controlEntity8 = new ControlEntity(8L, "Відсутній", "2");
             List<ControlEntity> controlEntities = new ArrayList<>();
             controlEntities.add(controlEntity1);
             controlEntities.add(controlEntity2);
@@ -111,8 +115,8 @@ public class DataInitializer implements CommandLineRunner {
 
         if (departmentRepo.count() == 0){
             DepartmentEntity department1 = new DepartmentEntity(1L, "Кафедра 1", "qwe", "q");
-            DepartmentEntity department2 = new DepartmentEntity(1L, "Кафедра 2", "qwe", "q");
-            DepartmentEntity department3 = new DepartmentEntity(1L, "Кафедра 3", "qwe", "q");
+            DepartmentEntity department2 = new DepartmentEntity(2L, "Кафедра 2", "qwe", "q");
+            DepartmentEntity department3 = new DepartmentEntity(3L, "Кафедра 3", "qwe", "q");
 
             List<DepartmentEntity> departmentEntities = new ArrayList<>();
             departmentEntities.add(department1);
@@ -120,6 +124,23 @@ public class DataInitializer implements CommandLineRunner {
             departmentEntities.add(department3);
 
             departmentRepo.saveAll(departmentEntities);
+        }
+
+        if (facultyRepo.count() == 0){
+            FacultyEntity facultyEntity1 = new FacultyEntity(1L, "Факультет 1");
+            FacultyEntity facultyEntity2 = new FacultyEntity(2L, "Факультет 2");
+            FacultyEntity facultyEntity3 = new FacultyEntity(3L, "Факультет 3");
+
+            List<FacultyEntity> facultyEntities = new ArrayList<>();
+            facultyEntities.add(facultyEntity1);
+            facultyEntities.add(facultyEntity2);
+            facultyEntities.add(facultyEntity3);
+
+            facultyRepo.saveAll(facultyEntities);
+        }
+
+        if (sessionRepo.count() == 0){
+            sessionRepo.save(new SessionEntity(1, "Зимова"));
         }
     }
 }

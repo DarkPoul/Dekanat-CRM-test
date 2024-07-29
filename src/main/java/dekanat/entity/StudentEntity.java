@@ -33,7 +33,7 @@ public class StudentEntity {
     @Column(name = "course", nullable = false)
     private String course;
 
-    @Column(name = "number", nullable = false)
+    @Column(name = "`number`", nullable = false)
     private String number;
 
     @Column(name = "year", nullable = false)

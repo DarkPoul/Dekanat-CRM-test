@@ -11,6 +11,7 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
+import dekanat.component.MainLayout;
 import dekanat.model.StudentModel;
 import dekanat.model.SuccessModel;
 import dekanat.service.StudentService;

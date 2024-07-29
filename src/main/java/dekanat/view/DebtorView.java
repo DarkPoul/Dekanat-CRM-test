@@ -10,6 +10,7 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
+import dekanat.component.MainLayout;
 import dekanat.model.DebtorModel;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 @Component
 @UIScope
 @PermitAll
+//@RolesAllowed("")
 public class DebtorView extends Div {
     private VerticalLayout mainLayout = new VerticalLayout();
     private VerticalLayout leftLayout = new VerticalLayout();

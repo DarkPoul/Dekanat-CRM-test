@@ -3,19 +3,25 @@ package dekanat.service;
 
 import dekanat.entity.StudentEntity;
 import dekanat.model.StudentModel;
+import dekanat.repository.FacultyRepo;
 import dekanat.repository.StudentRepo;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class StudentService {
 
     private final StudentRepo studentRepo;
+    private final DepartmentService departmentService;
+    private final FacultyRepo facultyRepo;
 
-    public StudentService(StudentRepo studentRepo) {
+    public StudentService(StudentRepo studentRepo, DepartmentService departmentService, FacultyRepo facultyRepo) {
         this.studentRepo = studentRepo;
+        this.departmentService = departmentService;
+        this.facultyRepo = facultyRepo;
     }
 
     public List<String> getAllGroups(){
@@ -100,7 +106,48 @@ public class StudentService {
     }
 
 
+    public List<String> getGroupTitleFilterFacultyAndDepartment(String faculty, String department){
+        int facultyId = (int) facultyRepo.findByTitle(faculty).getId();
+        int departmentId = (int) departmentService.getDepId(department);
 
+        // Отримуємо список студентів за факультетом та кафедрою
+        List<StudentEntity> studentEntities = studentRepo.findAllByDepartmentAndFaculty(departmentId, facultyId);
+
+        // Використовуємо Set для уникнення дублікатів і збираємо результати в List
+        return studentEntities.stream()
+                .map(StudentEntity::getGroup)
+                .distinct() // Відфільтровуємо унікальні значення
+                .collect(Collectors.toList());
+
+    }
+
+    public List<String> getGroupCourseFilterFacultyAndDepartmentAndSpec(String faculty, String department, String spec){
+        int facultyId = (int) facultyRepo.findByTitle(faculty).getId();
+        int departmentId = (int) departmentService.getDepId(department);
+        List<StudentEntity> studentEntities = studentRepo.findAllByDepartmentAndFacultyAndGroup(departmentId, facultyId, spec);
+
+        return studentEntities.stream()
+                .map(StudentEntity::getCourse)
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getGroupNumberFilterFacultyAndDepartmentAndSpecAndCourse(String faculty, String department, String spec, String course){
+        int facultyId = (int) facultyRepo.findByTitle(faculty).getId();
+        int departmentId = (int) departmentService.getDepId(department);
+
+        List<StudentEntity> studentEntities = studentRepo.findAllByDepartmentAndFacultyAndGroupAndCourse(departmentId, facultyId, spec, course);
+        return studentEntities.stream()
+                .map(StudentEntity::getNumber)
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    public StudentEntity getFullGroupTitle(String faculty, String department, String spec, String course, String number){
+        int facultyId = (int) facultyRepo.findByTitle(faculty).getId();
+        int departmentId = (int) departmentService.getDepId(department);
+        return studentRepo.findFirstByDepartmentAndFacultyAndGroupAndCourseAndNumber(departmentId, facultyId, spec, course, number);
+    }
 
 
 

@@ -152,11 +152,18 @@ public class PlansServices {
     }
 
     private String getChoice(List<String> students, List<String> studentChoice){
-        if (students.equals(studentChoice)){
+
+        List<String> modifiableStudents = new ArrayList<>(students);
+        List<String> modifiableStudentChoice = new ArrayList<>(studentChoice);
+
+        Collections.sort(modifiableStudents);
+        Collections.sort(modifiableStudentChoice);
+
+        if (modifiableStudents.equals(modifiableStudentChoice)) {
             return "Ні";
-        }
-        else
+        } else {
             return "Так";
+        }
     }
 
     private int getNumberSemester(String groupTitle, String semester){
