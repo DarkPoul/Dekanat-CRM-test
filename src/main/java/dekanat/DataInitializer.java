@@ -37,25 +37,40 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         if (userRepository.count() == 0) {
-            UserEntity user = new UserEntity();
-            user.setEmail("admin");
-            user.setPassword(passwordEncoder.encode("admin"));
-            user.setRole("ADMIN");
-            user.setEnabled(true);
-            userRepository.save(user);
-            System.out.println("Admin user created with email: admin and password: admin");
+            UserEntity user1 = new UserEntity(1L, "admin", passwordEncoder.encode("admin"), "Іванович", "Іван", "Іванов", true, "ADMIN");
+            UserEntity user2 = new UserEntity(2L, "dekanat", passwordEncoder.encode("dekanat"), "Іванович", "Іван", "Іванов", true, "DEKANAT_TT");
+            UserEntity user3 = new UserEntity(3L, "kafedra", passwordEncoder.encode("kafedra"), "Іванович", "Іван", "Іванов", true, "KAFEDRA_1");
+
+            userRepository.save(user1);
+            userRepository.save(user2);
+            userRepository.save(user3);
+            System.out.println("""
+                    ################################################
+                    #Admin, department, dekanat users created with:#
+                    ################################################
+                            __________________________
+                            |Admin - email: admin     |
+                            |        password: admin  |
+                            |_________________________|
+                            |Dekanat - email: dekanat |
+                            |       password: dekanat |
+                            |_________________________|
+                            |Kafedra - email: kafedra |
+                            |       password: kafedra |
+                            |_________________________|
+                    """);
         }
         if (studentRepo.count() == 0){
-            StudentEntity student1 = new StudentEntity(1L, "Гончар", "Павло", "Олександрович", "IBK", "4", "1", "19", 1, 1);
-            StudentEntity student2 = new StudentEntity(2L, "Поттер", "Гаррі", "Джеймсович", "IBK", "4", "1", "19", 1, 1);
-            StudentEntity student3 = new StudentEntity(3L, "Шевченко", "Тарас", "Григорович", "IBK", "4", "1", "19", 1, 1);
-            StudentEntity student4 = new StudentEntity(4L, "Куліков", "Андрій", "Сергійович", "IBK", "4", "1", "19", 1, 1);
-            StudentEntity student5 = new StudentEntity(5L, "Левченко", "Марія", "Іванівна", "IBK", "4", "1", "19", 1, 1);
-            StudentEntity student6 = new StudentEntity(6L, "Остапчук", "Дмитро", "Анатолійович", "IBK", "4", "1", "19", 1, 1);
-            StudentEntity student7 = new StudentEntity(7L, "Соловйов", "Олексій", "Ігорович", "IBK", "4", "1", "19", 1, 1);
-            StudentEntity student8 = new StudentEntity(8L, "Бондаренко", "Ольга", "Петрівна", "IBK", "4", "1", "19", 1, 1);
-            StudentEntity student9 = new StudentEntity(9L, "Мельник", "Катерина", "Олексіївна", "IBK", "4", "1", "19", 1, 1);
-            StudentEntity student10 = new StudentEntity(10L, "Коваль", "Віталій", "Миколайович", "IBK", "4", "1", "19", 1, 1);
+            StudentEntity student1 = new StudentEntity(1L, "Гончар", "Павло", "Олександрович", "IBK", "4", "1", "19", 1);
+            StudentEntity student2 = new StudentEntity(2L, "Поттер", "Гаррі", "Джеймсович", "IBK", "4", "1", "19", 1);
+            StudentEntity student3 = new StudentEntity(3L, "Шевченко", "Тарас", "Григорович", "IBK", "4", "1", "19", 1);
+            StudentEntity student4 = new StudentEntity(4L, "Куліков", "Андрій", "Сергійович", "IBK", "4", "1", "19", 1);
+            StudentEntity student5 = new StudentEntity(5L, "Левченко", "Марія", "Іванівна", "IBK", "4", "1", "19", 1);
+            StudentEntity student6 = new StudentEntity(6L, "Остапчук", "Дмитро", "Анатолійович", "IBK", "4", "1", "19", 1);
+            StudentEntity student7 = new StudentEntity(7L, "Соловйов", "Олексій", "Ігорович", "IBK", "4", "1", "19", 1);
+            StudentEntity student8 = new StudentEntity(8L, "Бондаренко", "Ольга", "Петрівна", "IBK", "4", "1", "19", 1);
+            StudentEntity student9 = new StudentEntity(9L, "Мельник", "Катерина", "Олексіївна", "IBK", "4", "1", "19", 1);
+            StudentEntity student10 = new StudentEntity(10L, "Коваль", "Віталій", "Миколайович", "IBK", "4", "1", "19", 1);
 
             studentRepo.save(student1);
             studentRepo.save(student2);

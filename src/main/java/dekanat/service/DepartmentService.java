@@ -34,24 +34,24 @@ public class DepartmentService {
         return departmentRepo.findAll().stream().map(DepartmentEntity::getTitle).toList();
     }
 
-    public List<String> getDepartmentFilterFaculty(String faculty){
-        long facultyId = facultyRepo.findByTitle(faculty).getId();
-
-        List<StudentEntity> studentEntities = studentRepo.findByFaculty(facultyId);
-
-        // Збираємо всі унікальні номери кафедр
-        Set<Long> uniqueDepartmentIds = studentEntities.stream()
-                .map(StudentEntity::getDepartment)
-                .map(Long::valueOf)
-                .collect(Collectors.toSet());
-
-        // Отримуємо назви кафедр за їх номерами
-
-        return uniqueDepartmentIds.stream()
-                .map(id -> departmentRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid department id: " + id)).getTitle())
-                .sorted()
-                .collect(Collectors.toList());
-    }
+//    public List<String> getDepartmentFilterFaculty(String faculty){
+//        long facultyId = facultyRepo.findByTitle(faculty).getId();
+//
+//        List<StudentEntity> studentEntities = studentRepo.findByFaculty(facultyId);
+//
+//        // Збираємо всі унікальні номери кафедр
+//        Set<Long> uniqueDepartmentIds = studentEntities.stream()
+//                .map(StudentEntity::getDepartment)
+//                .map(Long::valueOf)
+//                .collect(Collectors.toSet());
+//
+//        // Отримуємо назви кафедр за їх номерами
+//
+//        return uniqueDepartmentIds.stream()
+//                .map(id -> departmentRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid department id: " + id)).getTitle())
+//                .sorted()
+//                .collect(Collectors.toList());
+//    }
 
 
 }

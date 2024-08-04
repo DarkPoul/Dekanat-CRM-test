@@ -1,7 +1,6 @@
 package dekanat.component;
 
-
-
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -9,6 +8,10 @@ import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.checkbox.CheckboxGroupVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -34,30 +37,21 @@ public class TrainingPlanDialog extends Dialog {
     @Setter
     private UpdatePlanListener updatePlanListener;
 
-    private ComboBox<String> discipline = new ComboBox<>();
-    private TextField hours = new TextField();
-    private Select<String> choiceDiscipline = new Select<>();
-    private Select<String> firstControl = new Select<>();
-    private Select<String> secondControl = new Select<>();
-    private Select<String> parts = new Select<>();
-    private ComboBox<String> depart = new ComboBox<>();
-    private Button save = new Button("Зберегти");
-    private Button cancel = new Button("Відміна");
-    private Button remove = new Button("Видалити");
-    private Button update = new Button("Оновити");
+    private final ComboBox<String> discipline = new ComboBox<>();
+    private final TextField hours = new TextField();
+    private final Select<String> choiceDiscipline = new Select<>();
+    private final Select<String> firstControl = new Select<>();
+    private final Select<String> secondControl = new Select<>();
+    private final Select<String> parts = new Select<>();
+    private final ComboBox<String> depart = new ComboBox<>();
+    private final Button save = new Button("Зберегти");
+    private final Button remove = new Button("Видалити");
+    private final Button update = new Button("Оновити");
 
 
+    private final VerticalLayout VLayoutStudent = new VerticalLayout();
 
-
-
-    private HorizontalLayout HLayoutAll = new HorizontalLayout();
-    private HorizontalLayout HLayoutDisc = new HorizontalLayout();
-
-    private HorizontalLayout HButtonLayout = new HorizontalLayout();
-    private VerticalLayout VLayoutDisc1 = new VerticalLayout();
-    private VerticalLayout VLayoutDisc2 = new VerticalLayout();
-    private VerticalLayout VLayoutDisc3 = new VerticalLayout();
-    private VerticalLayout VLayoutStudent = new VerticalLayout();
+    Notification notification = new Notification();
 
 
 
@@ -72,6 +66,7 @@ public class TrainingPlanDialog extends Dialog {
 
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
         update.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
+        Button cancel = new Button("Відміна");
         cancel.addThemeVariants();
         remove.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
@@ -161,12 +156,9 @@ public class TrainingPlanDialog extends Dialog {
         });
 
 
-
-
-
-
-
+        VerticalLayout VLayoutDisc1 = new VerticalLayout();
         VLayoutDisc1.add(discipline, firstControl, choiceDiscipline);
+        VerticalLayout VLayoutDisc2 = new VerticalLayout();
         VLayoutDisc2.add(hours, secondControl, parts);
 
         VLayoutStudent.add(checkboxGroup, checkAllStudent);
@@ -174,13 +166,17 @@ public class TrainingPlanDialog extends Dialog {
         VLayoutStudent.setHorizontalComponentAlignment(FlexComponent.Alignment.END, checkAllStudent);
         VLayoutStudent.getStyle().set("border", "1px solid #e0e0e0");
 
+        HorizontalLayout HLayoutDisc = new HorizontalLayout();
         HLayoutDisc.add(VLayoutDisc1, VLayoutDisc2);
         HLayoutDisc.setWidth("600px");
 
+        VerticalLayout VLayoutDisc3 = new VerticalLayout();
         VLayoutDisc3.add(HLayoutDisc, depart);
 
+        HorizontalLayout HLayoutAll = new HorizontalLayout();
         HLayoutAll.add(VLayoutDisc3, VLayoutStudent);
 
+        HorizontalLayout HButtonLayout = new HorizontalLayout();
         HButtonLayout.add(save, update, cancel, remove);
 
         add(HLayoutAll, HButtonLayout);
@@ -220,7 +216,7 @@ public class TrainingPlanDialog extends Dialog {
         parts.setValue("1");
         choiceDiscipline.setValue("Ні");
         firstControl.setValue("");
-        secondControl.setValue("");
+        secondControl.setValue("Відсутній");
         discipline.setValue("");
         hours.setValue("");
 
@@ -236,6 +232,8 @@ public class TrainingPlanDialog extends Dialog {
 
 
         saveUpdateRemovePlan(trainingPlansModel);
+
+
     }
 
     private void saveUpdateRemovePlan(PlansModel trainingPlansModel) {
@@ -243,21 +241,25 @@ public class TrainingPlanDialog extends Dialog {
 
 
         save.addClickListener(event -> {
+            if (isAllSelected()){
+                List<String> students = checkboxGroup.getSelectedItems().stream().toList();
 
-            List<String> students = checkboxGroup.getSelectedItems().stream().toList();
+                trainingPlansModel.setHours(Integer.parseInt(hours.getValue()));
+                trainingPlansModel.setDisc(discipline.getValue());
+                trainingPlansModel.setChoice(choiceDiscipline.getValue());
+                trainingPlansModel.setFirst(firstControl.getValue());
+                trainingPlansModel.setSecond(secondControl.getValue());
+                trainingPlansModel.setPart(Integer.parseInt(parts.getValue()));
+                trainingPlansModel.setDepartment(depart.getValue());
 
-            trainingPlansModel.setHours(Integer.parseInt(hours.getValue()));
-            trainingPlansModel.setDisc(discipline.getValue());
-            trainingPlansModel.setChoice(choiceDiscipline.getValue());
-            trainingPlansModel.setFirst(firstControl.getValue());
-            trainingPlansModel.setSecond(secondControl.getValue());
-            trainingPlansModel.setPart(Integer.parseInt(parts.getValue()));
-            trainingPlansModel.setDepartment(depart.getValue());
 
-            if (savePlanListener != null){
-                savePlanListener.onSave(trainingPlansModel,students);
-            }
-            close();
+                if (savePlanListener != null){
+                    savePlanListener.onSave(trainingPlansModel,students);
+                }
+                close();
+            } else setMassage();
+
+
         });
 
         remove.addClickListener(event -> {
@@ -268,25 +270,57 @@ public class TrainingPlanDialog extends Dialog {
         });
 
         update.addClickListener(event -> {
+            if (isAllSelected()){
+                List<String> students = checkboxGroup.getSelectedItems().stream().toList();
 
-            List<String> students = checkboxGroup.getSelectedItems().stream().toList();
+                trainingPlansModel.setHours(Integer.parseInt(hours.getValue()));
+                trainingPlansModel.setDisc(discipline.getValue());
+                trainingPlansModel.setChoice(choiceDiscipline.getValue());
+                trainingPlansModel.setFirst(firstControl.getValue());
+                trainingPlansModel.setSecond(secondControl.getValue());
+                trainingPlansModel.setPart(Integer.parseInt(parts.getValue()));
+                trainingPlansModel.setDepartment(depart.getValue());
 
-            trainingPlansModel.setHours(Integer.parseInt(hours.getValue()));
-            trainingPlansModel.setDisc(discipline.getValue());
-            trainingPlansModel.setChoice(choiceDiscipline.getValue());
-            trainingPlansModel.setFirst(firstControl.getValue());
-            trainingPlansModel.setSecond(secondControl.getValue());
-            trainingPlansModel.setPart(Integer.parseInt(parts.getValue()));
-            trainingPlansModel.setDepartment(depart.getValue());
+                if (updatePlanListener != null){
+                    updatePlanListener.onUpdate(trainingPlansModel, students);
+                }
+                close();
+            } else setMassage();
 
-            if (updatePlanListener != null){
-                updatePlanListener.onUpdate(trainingPlansModel, students);
-            }
-            close();
+
         });
 
 
 
         super.open();
     }
+
+    public boolean isAllSelected(){
+        return discipline.getValue() != null && !discipline.getValue().isEmpty()
+                && hours.getValue() != null && !hours.getValue().isEmpty()
+                && choiceDiscipline.getValue() != null && !choiceDiscipline.getValue().isEmpty()
+                && firstControl.getValue() != null && !firstControl.getValue().isEmpty()
+                && secondControl.getValue() != null && !secondControl.getValue().isEmpty()
+                && parts.getValue() != null && !parts.getValue().isEmpty()
+                && depart.getValue() != null && !depart.getValue().isEmpty();
+    }
+
+    public void setMassage(){
+        notification.addThemeVariants(NotificationVariant.LUMO_WARNING);
+        Div text = new Div(
+                new Text("Введені не всі дані. Перевірте, та спробуйте зберегти ще раз!")
+        );
+        Button closeButton = new Button(new Icon("lumo", "cross"));
+        closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+        closeButton.setAriaLabel("Close");
+        closeButton.addClickListener(event -> notification.close());
+        HorizontalLayout layout = new HorizontalLayout(text, closeButton);
+        layout.setAlignItems(FlexComponent.Alignment.CENTER);
+
+        notification.add(layout);
+        notification.setDuration(5000);
+        notification.open();
+    }
+
+
 }

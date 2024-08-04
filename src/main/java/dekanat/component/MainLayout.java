@@ -2,6 +2,7 @@ package dekanat.component;
 
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
@@ -12,28 +13,51 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.spring.security.AuthenticationContext;
+import dekanat.entity.UserEntity;
+import dekanat.service.CustomUserDetailsService;
 import dekanat.service.SecurityService;
 import dekanat.view.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
 public class MainLayout extends AppLayout {
 
     private final SecurityService securityService;
+    private final CustomUserDetailsService customUserDetailsService;
 
-    public MainLayout(@Autowired SecurityService securityService) {
+    public MainLayout(@Autowired SecurityService securityService, AuthenticationContext authenticationContext, CustomUserDetailsService customUserDetailsService) {
         this.securityService = securityService;
+        this.customUserDetailsService = customUserDetailsService;
+        authenticationContext.getAuthenticatedUser(UserDetails.class).ifPresent(user -> {
+            boolean isAdmin = user.getAuthorities().stream().anyMatch(grantedAuthority -> "ROLE_ADMIN".equals(grantedAuthority.getAuthority()));
+            boolean isDekanat = user.getAuthorities().stream().anyMatch(grantedAuthority -> "ROLE_DEKANAT_TT".equals(grantedAuthority.getAuthority()));
+            boolean isKafedra = user.getAuthorities().stream().anyMatch(grantedAuthority -> "ROLE_KAFEDRA_1".equals(grantedAuthority.getAuthority()));
+            if (isAdmin){
+                createHeaderDekanat();
+                createDrawerDekanat();
+            }
+            if (isDekanat){
+                createHeaderDekanat();
+                createDrawerDekanat();
+            }
+            if (isKafedra){
+                createHeaderKafedra();
+                UI.getCurrent().access(() -> UI.getCurrent().navigate("marks"));
+            }
+        });
 
-        createHeader();
-        createDrawer();
     }
 
-    private void createHeader() {
+    private void createHeaderDekanat() {
         H1 logo = new H1("Dekanat CRM");
         logo.addClassNames("text-l", "m-m");
         Button logout = new Button("Вихід", e -> securityService.logout());
@@ -55,7 +79,7 @@ public class MainLayout extends AppLayout {
 
     }
 
-    private void createDrawer() {
+    private void createDrawerDekanat() {
         Tabs tabs = new Tabs();
         tabs.add(
                 createTab(VaadinIcon.MENU, "Головна", HomeView.class),
@@ -92,5 +116,29 @@ public class MainLayout extends AppLayout {
         return new Tab(link);
     }
 
+    private void createHeaderKafedra() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Object principal = authentication.getPrincipal();
+        String email = ((UserDetails) principal).getUsername();
+        H1 logo = new H1(customUserDetailsService.getPIB(email));
+        logo.addClassNames("text-l", "m-m");
+        Button logout = new Button("Вихід", e -> securityService.logout());
+
+
+
+        HorizontalLayout header = new HorizontalLayout(new DrawerToggle(), logo, logout);
+
+
+
+        header.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+        header.expand(logo);
+
+
+        header.setWidth("100%");
+        header.addClassNames("py-0", "px-m");
+
+        addToNavbar(header);
+
+    }
 
 }

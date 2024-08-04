@@ -17,11 +17,11 @@ public interface StudentRepo extends JpaRepository<StudentEntity, Long> {
 
     List<StudentEntity> findByFaculty(long faculty);
 
-    List<StudentEntity> findAllByDepartmentAndFaculty(int department, int faculty);
-
-    List<StudentEntity> findAllByDepartmentAndFacultyAndGroup(int department, int faculty, String spec);
-    List<StudentEntity> findAllByDepartmentAndFacultyAndGroupAndCourse(int department, int faculty, String spec, String course);
-    StudentEntity findFirstByDepartmentAndFacultyAndGroupAndCourseAndNumber(int department, int faculty, String spec, String course, String number);
+//    List<StudentEntity> findAllByDepartmentAndFaculty(int department, int faculty);
+//
+//    List<StudentEntity> findAllByDepartmentAndFacultyAndGroup(int department, int faculty, String spec);
+//    List<StudentEntity> findAllByDepartmentAndFacultyAndGroupAndCourse(int department, int faculty, String spec, String course);
+//    StudentEntity findFirstByDepartmentAndFacultyAndGroupAndCourseAndNumber(int department, int faculty, String spec, String course, String number);
 
 
 }

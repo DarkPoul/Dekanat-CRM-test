@@ -42,7 +42,5 @@ public class StudentEntity {
     @Column(name = "faculty", nullable = false)
     private int faculty;
 
-    @Column(name = "department", nullable = false)
-    private int department;
 
 }

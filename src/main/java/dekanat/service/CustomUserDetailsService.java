@@ -40,4 +40,12 @@ public class CustomUserDetailsService implements UserDetailsService {
         GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + userEntity.getRole());
         return new User(userEntity.getEmail(), userEntity.getPassword(), Collections.singleton(authority));
     }
+
+    public String getPIB(String email){
+        Optional<UserEntity> userEntityOpt = userRepository.findByEmail(email);
+        UserEntity userEntity = userEntityOpt.get();
+        return userEntity.getLastname() + " " + userEntity.getFirstname() + " " + userEntity.getPatronymic();
+    }
+
+
 }
