@@ -1,6 +1,8 @@
 package dekanat.service;
 
 
+import com.vaadin.flow.spring.security.AuthenticationContext;
+import dekanat.entity.FacultyEntity;
 import dekanat.entity.MarkEntity;
 import dekanat.entity.PlansEntity;
 import dekanat.entity.StudentEntity;
@@ -9,6 +11,7 @@ import dekanat.repository.*;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PlansServices {
@@ -20,8 +23,11 @@ public class PlansServices {
     private final DepartmentRepo departmentRepo;
     private final StudentService studentService;
     private final MarkRepo markRepo;
+    private final AuthenticationContext authenticationContext;
+    private final SessionRepo sessionRepo;
 
-    public PlansServices(PlansRepo plansRepo, StudentRepo studentRepo, DiscRepo discRepo, ControlRepo controlRepo, DepartmentRepo departmentRepo, StudentService studentService, MarkRepo markRepo) {
+    private final FacultyRepo facultyRepo;
+    public PlansServices(PlansRepo plansRepo, StudentRepo studentRepo, DiscRepo discRepo, ControlRepo controlRepo, DepartmentRepo departmentRepo, StudentService studentService, MarkRepo markRepo, AuthenticationContext authenticationContext, AuthenticationContext authenticationContext1, SessionRepo sessionRepo, FacultyRepo facultyRepo) {
         this.plansRepo = plansRepo;
         this.studentRepo = studentRepo;
         this.discRepo = discRepo;
@@ -29,6 +35,10 @@ public class PlansServices {
         this.departmentRepo = departmentRepo;
         this.studentService = studentService;
         this.markRepo = markRepo;
+        this.authenticationContext = authenticationContext1;
+        this.sessionRepo = sessionRepo;
+        this.facultyRepo = facultyRepo;
+
     }
 
     public List<PlansModel> getStudyPlansForGroup(String groupName, String semester) {
@@ -82,6 +92,9 @@ public class PlansServices {
 
         PlansEntity entity = new PlansEntity();
 
+        FacultyEntity facultyEntity = facultyRepo.findByAbr(authenticationContext.getGrantedRoles().stream().findFirst().get());
+        System.out.println(facultyEntity.getId());
+
         entity.setId(Optional.ofNullable(plansRepo.findMaxId()).orElse(0L) + 1);
         entity.setStudents(String.join(", ", studentService.getStudentsId(students, groupTitle)));
         entity.setDiscipline(discRepo.findByTitle(plansModel.getDisc()).getId());
@@ -91,6 +104,8 @@ public class PlansServices {
         entity.setSecond(Math.toIntExact(controlRepo.findByTitle(plansModel.getSecond()).getId()));
         entity.setParts(plansModel.getPart());
         entity.setDepartment(Math.toIntExact(departmentRepo.findByTitle(plansModel.getDepartment()).getId()));
+        entity.setFaculty((int)facultyEntity.getId());
+        entity.setGroup(groupTitle);
 
         plansRepo.save(entity);
 
@@ -98,28 +113,45 @@ public class PlansServices {
 
         for (String s : studentService.getStudentsId(students, groupTitle)){
             MarkEntity markEntity = new MarkEntity();
-            MarkEntity markEntity1 = new MarkEntity();
+
 
             markEntity.setId(Optional.ofNullable(markRepo.findMaxId()).orElse(0L) + 1);
             markEntity.setPlan(entity.getId());
             markEntity.setStudent(Long.parseLong(s));
-            markEntity.setDisc(entity.getDiscipline());
             markEntity.setSemester(entity.getSemester());
             markEntity.setControl(entity.getFirst());
             markEntity.setMark("0");
 
             markRepo.save(markEntity);
 
-            if (entity.getSecond()!=8){
-                markEntity1.setId(Optional.ofNullable(markRepo.findMaxId()).orElse(0L) + 1);
-                markEntity1.setPlan(entity.getId());
-                markEntity1.setStudent(Long.parseLong(s));
-                markEntity1.setDisc(entity.getDiscipline());
-                markEntity1.setSemester(entity.getSemester());
-                markEntity1.setControl(entity.getSecond());
-                markEntity1.setMark(String.join(", ", Collections.nCopies(entity.getParts(), "0")));
+            markEntity.setId(Optional.ofNullable(markRepo.findMaxId()).orElse(0L) + 1);
+            markEntity.setControl(Integer.parseInt(String.valueOf(controlRepo.findByTitle("Перший модульний контроль").getId())));
 
-                markRepo.save(markEntity1);
+            markRepo.save(markEntity);
+
+            markEntity.setId(Optional.ofNullable(markRepo.findMaxId()).orElse(0L) + 1);
+            markEntity.setControl(Integer.parseInt(String.valueOf(controlRepo.findByTitle("Другий модульний контроль").getId())));
+
+            markRepo.save(markEntity);
+
+
+
+            if (entity.getSecond()!=8){
+                markEntity.setId(Optional.ofNullable(markRepo.findMaxId()).orElse(0L) + 1);
+                markEntity.setControl(entity.getSecond());
+
+
+                StringBuilder marksBuilder = new StringBuilder();
+                int parts = entity.getParts();
+                for (int i = 0; i < parts; i++) {
+                    marksBuilder.append("0");
+                    if (i < parts - 1) {
+                        marksBuilder.append(",");
+                    }
+                }
+                markEntity.setMark(marksBuilder.toString());
+
+                markRepo.save(markEntity);
             }
 
 
@@ -156,6 +188,7 @@ public class PlansServices {
 
         // Add new MarkEntity records for new students
         for (String studentId : studentsToAdd) {
+            createMarkEntitiesForStudent(entity, studentId, plansModel.getFirst(), true);
             createMarkEntitiesForStudent(entity, studentId, plansModel.getSecond(), true);
         }
 
@@ -188,61 +221,86 @@ public class PlansServices {
         // Update PlansEntity fields
         updatePlanEntityFields(entity, plansModel, newStudents);
 
+        for (String studentId : currentStudents) {
+            List<MarkEntity> marks = markRepo.findByStudentAndPlan(Long.parseLong(studentId), entity.getId());
+            for (MarkEntity mark : marks) {
+                if (mark.getControl() == entity.getFirst()) {
+                    mark.setControl(Math.toIntExact(controlRepo.findByTitle(plansModel.getFirst()).getId()));
+                    mark.setMark("0");
+                    markRepo.save(mark);
+                } else if (mark.getControl() == entity.getSecond()) {
+                    mark.setControl(Math.toIntExact(controlRepo.findByTitle(plansModel.getSecond()).getId()));
+                    mark.setMark(createMarksString(entity.getParts()));
+                    markRepo.save(mark);
+                }
+            }
+        }
+
         plansRepo.save(entity);
         System.out.println("update successful");
     }
 
-    private void createMarkEntitiesForStudent(PlansEntity entity, String studentId, String secondControlType, boolean includeFirstControl) {
-        long nextId = Optional.ofNullable(markRepo.findMaxId()).orElse(0L) + 1;
 
-        if (includeFirstControl) {
-            MarkEntity markEntity = new MarkEntity();
-            markEntity.setId(nextId);
-            markEntity.setPlan(entity.getId());
-            markEntity.setStudent(Long.parseLong(studentId));
-            markEntity.setDisc(entity.getDiscipline());
-            markEntity.setSemester(entity.getSemester());
-            markEntity.setControl(entity.getFirst());
+
+    private void createMarkEntitiesForStudent(PlansEntity entity, String studentId, String controlType, boolean isNew) {
+
+        MarkEntity markEntity = new MarkEntity();
+
+        markEntity.setPlan(entity.getId());
+        markEntity.setStudent(Long.parseLong(studentId));
+        markEntity.setSemester(entity.getSemester());
+
+        if (entity.getSecond()==4 || entity.getSecond()==5){
+
+            markEntity.setId(Optional.ofNullable(markRepo.findMaxId()).orElse(0L) + 1);
+            markEntity.setControl(Math.toIntExact(controlRepo.findByTitle(controlType).getId()));
+
             markEntity.setMark("0");
-
             markRepo.save(markEntity);
         }
 
-        if (!Objects.equals(secondControlType, "Відсутній")) {
+        if (entity.getFirst() == 1 || entity.getFirst() == 2 || entity.getFirst() == 3){
+
             MarkEntity markEntity1 = new MarkEntity();
-            markEntity1.setId(nextId + 1);
             markEntity1.setPlan(entity.getId());
             markEntity1.setStudent(Long.parseLong(studentId));
-            markEntity1.setDisc(entity.getDiscipline());
             markEntity1.setSemester(entity.getSemester());
-            markEntity1.setControl(entity.getSecond());
-            markEntity1.setMark(String.join(", ", Collections.nCopies(entity.getParts(), "0")));
-
+            markEntity1.setId(Optional.ofNullable(markRepo.findMaxId()).orElse(0L) + 1);
+            markEntity1.setControl(Math.toIntExact(controlRepo.findByTitle(controlType).getId()));
+            markEntity1.setMark("0");
             markRepo.save(markEntity1);
+
+
+            markEntity.setId(Optional.ofNullable(markRepo.findMaxId()).orElse(0L) + 1);
+            markEntity.setControl(Integer.parseInt(String.valueOf(controlRepo.findByTitle("Перший модульний контроль").getId())));
+            markRepo.save(markEntity);
+
+            markEntity.setId(Optional.ofNullable(markRepo.findMaxId()).orElse(0L) + 1);
+            markEntity.setControl(Integer.parseInt(String.valueOf(controlRepo.findByTitle("Другий модульний контроль").getId())));
+            markRepo.save(markEntity);
         }
+
+
+
     }
 
     private void updateControlTypesForStudents(PlansEntity entity, List<String> currentStudents, PlansModel plansModel) {
-        if (entity.getFirst() != Math.toIntExact(controlRepo.findByTitle(plansModel.getFirst()).getId())) {
-            for (String studentId : currentStudents) {
-                List<MarkEntity> marksToUpdate = markRepo.findByStudentAndPlanAndControl(Long.parseLong(studentId), entity.getId(), entity.getFirst());
-                for (MarkEntity markEntity : marksToUpdate) {
-                    markEntity.setControl(Math.toIntExact(controlRepo.findByTitle(plansModel.getFirst()).getId()));
-                    markRepo.save(markEntity);
-                }
-            }
-        }
+        for (String studentId : currentStudents) {
+            List<MarkEntity> marks = markRepo.findByStudentAndPlan(Long.parseLong(studentId), entity.getId());
 
-        if (entity.getSecond() != Math.toIntExact(controlRepo.findByTitle(plansModel.getSecond()).getId())) {
-            for (String studentId : currentStudents) {
-                List<MarkEntity> marksToUpdate = markRepo.findByStudentAndPlanAndControl(Long.parseLong(studentId), entity.getId(), entity.getSecond());
-                for (MarkEntity markEntity : marksToUpdate) {
-                    markEntity.setControl(Math.toIntExact(controlRepo.findByTitle(plansModel.getSecond()).getId()));
-                    markRepo.save(markEntity);
+            for (MarkEntity mark : marks) {
+                if (mark.getControl() == entity.getFirst()) {
+                    mark.setControl(Math.toIntExact(controlRepo.findByTitle(plansModel.getFirst()).getId()));
+                    markRepo.save(mark);
+                } else if (mark.getControl() == entity.getSecond()) {
+                    mark.setControl(Math.toIntExact(controlRepo.findByTitle(plansModel.getSecond()).getId()));
+                    markRepo.save(mark);
                 }
             }
         }
     }
+
+
 
     private void updatePlanEntityFields(PlansEntity entity, PlansModel plansModel, List<String> newStudents) {
         entity.setStudents(String.join(", ", newStudents));
@@ -252,6 +310,17 @@ public class PlansServices {
         entity.setSecond(Math.toIntExact(controlRepo.findByTitle(plansModel.getSecond()).getId()));
         entity.setParts(plansModel.getPart());
         entity.setDepartment(Math.toIntExact(departmentRepo.findByTitle(plansModel.getDepartment()).getId()));
+    }
+
+    private String createMarksString(int parts) {
+        StringBuilder marksBuilder = new StringBuilder("0;");
+        for (int i = 0; i < parts; i++) {
+            marksBuilder.append("0");
+            if (i < parts - 1) {
+                marksBuilder.append(",");
+            }
+        }
+        return marksBuilder.toString();
     }
 
     public void removePlan(long planId) {
@@ -301,6 +370,97 @@ public class PlansServices {
 
     }
 
+    public Set<String> getGroupTitle(String faculty, String department){
+        List<PlansEntity> plansEntityList = plansRepo.findByFacultyAndDepartment
+                (
+                        facultyRepo.findByTitle(faculty).getId(),
+                        departmentRepo.findByTitle(department).getId()
+                );
+        return plansEntityList.stream()
+                .map(PlansEntity::getGroup)
+                .map(group -> group.split("-"))
+                .filter(parts -> parts.length > 3)
+                .map(parts -> parts[0])
+                .collect(Collectors.toSet());
+    }
+
+    public Set<String> getCourse(String faculty, String department, String speciality){
+        return plansRepo.findByFacultyAndDepartmentAndSpeciality
+                        (
+                                facultyRepo.findByTitle(faculty).getId(),
+                                departmentRepo.findByTitle(department).getId(),
+                                speciality
+                        ).stream().map(PlansEntity::getGroup)
+                .map(group -> group.split("-"))
+                .filter(parts -> parts.length > 3)
+                .map(parts -> parts[1] + " (" + parts[3] + ")")
+                .collect(Collectors.toSet());
+    }
+
+    public Set<String> getGroupNumber(String faculty, String department, String speciality, String course) {
+        long facultyId = facultyRepo.findByTitle(faculty).getId();
+        long departmentId = departmentRepo.findByTitle(department).getId();
+        List<PlansEntity> results = plansRepo.findByFacultyAndDepartmentAndSpeciality(facultyId, departmentId, speciality);
+        for (PlansEntity plansEntity : results){
+            System.out.println(plansEntity.getGroup());
+        }
+
+        return results.stream()
+                .map(PlansEntity::getGroup)
+                .map(group -> group.split("-"))
+                .filter(parts -> parts.length > 3)
+                .filter(parts -> Objects.equals(parts[1], course))
+                .map(parts -> parts[2])
+                .collect(Collectors.toSet());
+    }
+
+    public List<String> getDiscipline(String faculty, String department, String speciality, String course, String number){
+        String group = speciality + "-" + course.charAt(0) + "-" + number + "-" + course.substring(3, course.length() - 1);
+        return plansRepo.findByFacultyAndDepartmentAndGroup
+                        (
+                                facultyRepo.findByTitle(faculty).getId(),
+                                departmentRepo.findByTitle(department).getId(),
+                                group
+                        ).stream().map(PlansEntity::getDiscipline)
+                .map(discRepo::findById)
+                .filter(Optional::isPresent)
+                .map(discEntity -> discEntity.get().getTitle())
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getTypeControl(String faculty, String department, String speciality, String course, String number, String disc) {
+        String group = speciality + "-" + course.charAt(0) + "-" + number + "-" + course.substring(3, course.length() - 1);
+
+        PlansEntity controls = plansRepo.findByFacultyAndDepartmentAndGroupAndDiscipline
+                (
+                        facultyRepo.findByTitle(faculty).getId(),
+                        departmentRepo.findByTitle(department).getId(),
+                        group,
+                        discRepo.findByTitle(disc).getId()
+                );
+
+        List<String> controlList = new ArrayList<>();
+        controlList.add("Перший модульний контроль");
+        controlList.add("Другий модульний контроль");
+        controlList.add(controlRepo.findById(controls.getFirst()).getTitle());
+        if (controls.getSecond() != 8){
+            controlList.add(controlRepo.findById(controls.getSecond()).getTitle());
+        }
+
+        return controlList;
+    }
+
+    public PlansEntity getPlanModel(String department, String faculty, String disc, String group){
+        int semester = getNumberSemester(group, sessionRepo.findAll().get(0).getSession());
 
 
+        return plansRepo.findByFacultyAndDepartmentAndGroupAndDisciplineAndSemester
+                (
+                        facultyRepo.findByTitle(faculty).getId(),
+                        departmentRepo.findByTitle(department).getId(),
+                        group,
+                        discRepo.findByTitle(disc).getId(),
+                        semester
+                );
+    }
 }

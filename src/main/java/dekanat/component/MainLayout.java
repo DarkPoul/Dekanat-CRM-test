@@ -12,35 +12,44 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
-import com.vaadin.flow.router.HighlightConditions;
 import com.vaadin.flow.router.RouterLink;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.spring.security.AuthenticationContext;
-import dekanat.entity.UserEntity;
+import dekanat.entity.RolesEntity;
+import dekanat.repository.RolesRepo;
 import dekanat.service.CustomUserDetailsService;
 import dekanat.service.SecurityService;
 import dekanat.view.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.List;
 
 public class MainLayout extends AppLayout {
 
     private final SecurityService securityService;
     private final CustomUserDetailsService customUserDetailsService;
 
-    public MainLayout(@Autowired SecurityService securityService, AuthenticationContext authenticationContext, CustomUserDetailsService customUserDetailsService) {
+    public MainLayout(@Autowired SecurityService securityService, AuthenticationContext authenticationContext, CustomUserDetailsService customUserDetailsService, RolesRepo rolesRepo) {
         this.securityService = securityService;
         this.customUserDetailsService = customUserDetailsService;
+
+        List<String> roleAdmin = rolesRepo.findByAccessType(1).stream().map(RolesEntity::getTitle).toList();
+        List<String> roleDekanat = rolesRepo.findByAccessType(2).stream().map(RolesEntity::getTitle).toList();
+        List<String> roleKafedra = rolesRepo.findByAccessType(3).stream().map(RolesEntity::getTitle).toList();
+
+
         authenticationContext.getAuthenticatedUser(UserDetails.class).ifPresent(user -> {
-            boolean isAdmin = user.getAuthorities().stream().anyMatch(grantedAuthority -> "ROLE_ADMIN".equals(grantedAuthority.getAuthority()));
-            boolean isDekanat = user.getAuthorities().stream().anyMatch(grantedAuthority -> "ROLE_DEKANAT_TT".equals(grantedAuthority.getAuthority()));
-            boolean isKafedra = user.getAuthorities().stream().anyMatch(grantedAuthority -> "ROLE_KAFEDRA_1".equals(grantedAuthority.getAuthority()));
+            boolean isAdmin = user.getAuthorities().stream().map(GrantedAuthority::getAuthority).anyMatch(roleAdmin::contains);
+            System.out.println(isAdmin);
+            boolean isDekanat = user.getAuthorities().stream().map(GrantedAuthority::getAuthority).anyMatch(roleDekanat::contains);
+            System.out.println(isDekanat);
+            boolean isKafedra = user.getAuthorities().stream().map(GrantedAuthority::getAuthority).anyMatch(roleKafedra::contains);
+            System.out.println(isKafedra);
             if (isAdmin){
                 createHeaderDekanat();
                 createDrawerDekanat();
@@ -88,7 +97,8 @@ public class MainLayout extends AppLayout {
                 createTab(VaadinIcon.ABACUS, "Боржники", DebtorView.class),
                 createTab(VaadinIcon.USER_CARD, "Перегляд інформації", StudentCardView.class),
                 createTab(VaadinIcon.USER_CARD, "Перегляд карток", ReviewingCardsView.class),
-                createTab(VaadinIcon.PENCIL, "Введення оцінок", EnterMarksView.class)
+                createTab(VaadinIcon.PENCIL, "Введення оцінок", EnterMarksView.class),
+                createTab(VaadinIcon.USER, "Адмін", AdminView.class)
 //                createTab(VaadinIcon.ANGLE_DOUBLE_UP, "Переведення на курс"),
 //                createTab(VaadinIcon.PRINT, "Друк інформації"),
 //                createTab(VaadinIcon.BAR_CHART_H, "Модульний контроль"),

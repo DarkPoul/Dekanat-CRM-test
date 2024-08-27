@@ -34,6 +34,10 @@ public class DepartmentService {
         return departmentRepo.findAll().stream().map(DepartmentEntity::getTitle).toList();
     }
 
+    public String getDepartmentRole(String abr){
+        return departmentRepo.findByAbbreviation(abr).getTitle();
+    }
+
 //    public List<String> getDepartmentFilterFaculty(String faculty){
 //        long facultyId = facultyRepo.findByTitle(faculty).getId();
 //

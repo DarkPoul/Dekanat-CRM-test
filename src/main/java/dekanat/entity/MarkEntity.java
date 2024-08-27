@@ -19,11 +19,27 @@ public class MarkEntity {
     private long id;
     private long plan;
     private long student;
-    private long disc;
     private int semester;
     private int control;
     private String mark;
     private String number;
     private String date;
+    private String user;
+    private boolean enabled;
 
+    @Override
+    public String toString() {
+        return "MarkEntity{" +
+                "id=" + id +
+                ", plan=" + plan +
+                ", student=" + student +
+                ", semester=" + semester +
+                ", control=" + control +
+                ", mark='" + mark + '\'' +
+                ", number='" + number + '\'' +
+                ", date='" + date + '\'' +
+                ", user='" + user + '\'' +
+                ", enabled=" + enabled +
+                '}';
+    }
 }

@@ -1,22 +1,34 @@
 package dekanat.view;
 
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.textfield.TextFieldVariant;
+import com.vaadin.flow.component.upload.Upload;
+import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
+import com.vaadin.flow.data.provider.Query;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
+
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.spring.annotation.UIScope;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import dekanat.component.MainLayout;
 import dekanat.entity.*;
-import dekanat.model.EnterMarksModel;
+
+import dekanat.model.MarksModel;
 import dekanat.model.PlansModel;
 import dekanat.repository.ControlRepo;
 import dekanat.repository.FacultyRepo;
@@ -24,13 +36,17 @@ import dekanat.repository.MarkRepo;
 import dekanat.repository.SessionRepo;
 import dekanat.service.*;
 import jakarta.annotation.security.PermitAll;
-import org.springframework.security.core.userdetails.UserDetails;
+
 import org.springframework.stereotype.Component;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
+
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 @PageTitle("Введення оцінок | Деканат")
 @Route(value = "marks", layout = MainLayout.class)
@@ -47,6 +63,7 @@ public class EnterMarksView extends Div {
     private final DiscService discService;
     private final MarkRepo markRepo;
     private final ControlRepo controlRepo;
+    private final CustomUserDetailsService customUserDetailsService;
 
     private VerticalLayout mainLayout = new VerticalLayout();
     private HorizontalLayout topLayout = new HorizontalLayout();
@@ -61,11 +78,14 @@ public class EnterMarksView extends Div {
     private Select<String> selectGroup = new Select<>();
     private Select<String> selectDiscipline = new Select<>();
     private Select<String> selectControlType = new Select<>();
-    private Grid<EnterMarksModel> studentGrid = new Grid<>(EnterMarksModel.class, false);
+    private Grid<MarksModel> studentGrid = new Grid<>(MarksModel.class, false);
     private List<PlansModel> plansModels = new ArrayList<>();
     private final SecurityService securityService;
+    private final MarkServices markServices;
 
-    public EnterMarksView(FacultyRepo facultyRepo, DepartmentService departmentService, StudentService studentService, PlansServices plansServices, SessionRepo sessionRepo, DiscService discService, MarkRepo markRepo, ControlRepo controlRepo, SecurityService securityService, AuthenticationContext authenticationContext) {
+    List<String> controls = new ArrayList<>();
+
+    public EnterMarksView(FacultyRepo facultyRepo, DepartmentService departmentService, StudentService studentService, PlansServices plansServices, SessionRepo sessionRepo, DiscService discService, MarkRepo markRepo, ControlRepo controlRepo, CustomUserDetailsService customUserDetailsService, SecurityService securityService, AuthenticationContext authenticationContext, MarkServices markServices) {
         this.facultyRepo = facultyRepo;
         this.departmentService = departmentService;
         this.studentService = studentService;
@@ -74,7 +94,9 @@ public class EnterMarksView extends Div {
         this.discService = discService;
         this.markRepo = markRepo;
         this.controlRepo = controlRepo;
+        this.customUserDetailsService = customUserDetailsService;
         this.securityService = securityService;
+        this.markServices = markServices;
         // Form layout
         selectFaculty.setLabel("Факультет");
         selectFaculty.setItems("Транспортних та інформаційних технологій", "Інші факультети");
@@ -127,24 +149,14 @@ public class EnterMarksView extends Div {
         buttonLayout.add(saveButton, approveButton, unlockButton, printReportButton, additionalReportButton);
 
         // Student Grid
-        studentGrid.addColumn(EnterMarksModel::getStudentNumber).setHeader("№").setAutoWidth(true);
-        studentGrid.addColumn(EnterMarksModel::getFullName).setHeader("ПІБ студента").setAutoWidth(true);
-        studentGrid.addColumn(EnterMarksModel::getRgr1).setHeader("РГР 1").setAutoWidth(true);
-        studentGrid.addColumn(EnterMarksModel::getRgr2).setHeader("РГР 2").setAutoWidth(true);
-        studentGrid.addColumn(EnterMarksModel::getRgr3).setHeader("РГР 3").setAutoWidth(true);
-        studentGrid.addColumn(EnterMarksModel::getRgr4).setHeader("РГР 4").setAutoWidth(true);
-        studentGrid.addColumn(EnterMarksModel::getTotalScore).setHeader("Оцінка").setAutoWidth(true);
-        studentGrid.addColumn(EnterMarksModel::isBlocked).setHeader("Чи заблоковано").setAutoWidth(true);
-        studentGrid.addColumn(EnterMarksModel::getLastModified).setHeader("Час зміни").setAutoWidth(true);
-        studentGrid.addColumn(EnterMarksModel::getUser).setHeader("Користувач").setAutoWidth(true);
+
 
         // Sample data
-        List<EnterMarksModel> sampleData = Arrays.asList(
-                new EnterMarksModel(1, "Іваненко Іван Іванович", 10, 9, 8, 7, 34, false, "17.08.2020", "user1"),
-                new EnterMarksModel(2, "Петренко Петро Петрович", 9, 8, 7, 6, 30, true, "18.08.2020", "user2"),
-                new EnterMarksModel(3, "Сидоренко Сидір Сидорович", 8, 7, 6, 5, 26, false, "20.08.2020", "user3")
-        );
-        studentGrid.setItems(sampleData);
+
+
+
+
+
 
         studentGrid.getStyle().set("border", "1px solid #ddd");
         studentGrid.getStyle().set("border-radius", "8px");
@@ -178,91 +190,290 @@ public class EnterMarksView extends Div {
 
         //Backend
 
-//        selectFaculty.setItems(facultyRepo.findAll().stream().map(FacultyEntity::getTitle).toList());
-////        selectFaculty.addValueChangeListener(event
-////                -> selectDepartment.setItems(departmentService.getDepartmentFilterFaculty(selectFaculty.getValue())));
-//        selectDepartment.addValueChangeListener(event
-//                -> selectSpecialty.setItems(studentService.getGroupTitleFilterFacultyAndDepartment
-//                (
-//                        selectFaculty.getValue(),
-//                        selectDepartment.getValue()
-//                )
-//        ));
-//        selectSpecialty.addValueChangeListener(event -> {
-//           selectCourse.setItems(studentService.getGroupCourseFilterFacultyAndDepartmentAndSpec
-//                   (
-//                           selectFaculty.getValue(),
-//                           selectDepartment.getValue(),
-//                           selectSpecialty.getValue()
-//                   )
-//           );
-//        });
-//        selectCourse.addValueChangeListener(event ->{
-//            System.out.println(selectCourse.getValue());
-//            selectGroup.setItems(studentService.getGroupNumberFilterFacultyAndDepartmentAndSpecAndCourse
-//                    (
-//                            selectFaculty.getValue(),
-//                            selectDepartment.getValue(),
-//                            selectSpecialty.getValue(),
-//                            selectCourse.getValue()
-//                    )
-//            );
-//        });
-//
-//
-//        selectGroup.addValueChangeListener(event -> { //todo створити сервіс, та перенести метод
-//            StudentEntity student = studentService.getFullGroupTitle(
-//                    selectFaculty.getValue(),
-//                    selectDepartment.getValue(),
-//                    selectSpecialty.getValue(),
-//                    selectCourse.getValue(),
-//                    selectGroup.getValue()
-//            );
-//
-//            String groupTitle = student.getGroup() + "-" + student.getCourse() + "-" + student.getNumber() + "-" + student.getYear();
-//
-//            plansModels = plansServices.getStudyPlansForGroup(groupTitle, sessionRepo.findById(1).map(SessionEntity::getSession).orElseThrow());
-//
-//            selectDiscipline.setItems(plansModels.stream().map(PlansModel::getDisc).collect(Collectors.toList()));
-//
-//        });
-//
-//        selectDiscipline.addValueChangeListener(event -> { //todo створити сервіс, та перенести метод
-//           long planId = plansModels.get(0).getPlanId();
-//           List<MarkEntity> markEntities = markRepo.findAllByPlan(planId);
-//           List<String> control = new ArrayList<>();
-//           for (MarkEntity markEntity : markEntities){
-//               String disc = controlRepo.findById(markEntity.getControl()).getTitle();
-//               if (!control.contains(disc)){
-//                   control.add(disc);
-//               }
-//           }
-//           selectControlType.setItems(control);
-//
-//
-//        });
 
 
-        //Backend
+        String Role = authenticationContext.getGrantedRoles().stream().findFirst().get().split("_")[0];
 
-//        authenticationContext.getAuthenticatedUser(UserDetails.class).ifPresent(user -> {
-//            boolean isAdmin = user.getAuthorities().stream().anyMatch(grantedAuthority -> "ROLE_ADMIN".equals(grantedAuthority.getAuthority()));
-//            boolean isDekanat = user.getAuthorities().stream().anyMatch(grantedAuthority -> "ROLE_DEKANAT_TT".equals(grantedAuthority.getAuthority()));
-//            boolean isKafedra = user.getAuthorities().stream().anyMatch(grantedAuthority -> "ROLE_KAFEDRA_1".equals(grantedAuthority.getAuthority()));
-//            if (isAdmin){
-//                //todo
-//            }
-//            if (isDekanat){
-//                //todo
-//                selectFaculty.setReadOnly(true);
-//            }
-//            if (isKafedra){
-//                //todo
-//                selectDepartment.setReadOnly(true);
-//            }
-//        });
+        selectFaculty.setItems(facultyRepo.findAll().stream().map(FacultyEntity::getTitle).toList());
+        selectDepartment.setItems(departmentService.getAllDepartment());
+
+        switch (Role){
+            case "ADMIN":
+                System.out.println("ADMIN");
+                break;
+            case "DEKANAT":
+                FacultyEntity facultyEntity = facultyRepo.findByAbr(authenticationContext.getGrantedRoles().stream().findFirst().get());
+                selectFaculty.setValue(facultyEntity.getTitle());
+                System.out.println(facultyEntity.getId());
+                selectFaculty.setReadOnly(true);
+
+                selectDepartment.addValueChangeListener(event -> {
+                    selectSpecialty.setItems(plansServices.getGroupTitle(selectFaculty.getValue(), selectDepartment.getValue()));
+                    selectSpecialty.setValue(null);
+                });
+
+                break;
+            case "KAFEDRA":
+                selectDepartment.setValue(departmentService.getDepartmentRole(authenticationContext.getGrantedRoles().stream().findFirst().get().split("_")[1]));
+                selectDepartment.setReadOnly(true);
+                System.out.println("KAFEDRA");
+                selectFaculty.addValueChangeListener(event->{
+                   selectSpecialty.setItems(plansServices.getGroupTitle(selectFaculty.getValue(), selectDepartment.getValue()));
+                   selectSpecialty.setValue(null);
+                });
+                break;
+        }
+
+
+        selectSpecialty.addValueChangeListener(event -> {
+            if (selectSpecialty.getValue() != null){
+                selectCourse.setItems(plansServices.getCourse(selectFaculty.getValue(), selectDepartment.getValue(), selectSpecialty.getValue()));
+            } else selectCourse.setValue(null);
+        });
+
+        selectCourse.addValueChangeListener(event -> {
+            if (selectCourse.getValue() != null){
+                selectGroup.setItems(plansServices.getGroupNumber(selectFaculty.getValue(), selectDepartment.getValue(), selectSpecialty.getValue(), selectCourse.getValue().split(" ")[0]));
+            } else selectGroup.setValue(null);
+        });
+
+        selectGroup.addValueChangeListener(event -> {
+            if (selectGroup.getValue() != null){
+                selectDiscipline.setItems(plansServices.getDiscipline(selectFaculty.getValue(), selectDepartment.getValue(), selectSpecialty.getValue(), selectCourse.getValue(), selectGroup.getValue()));
+            } else selectDiscipline.setValue(null);
+        });
+
+        selectDiscipline.addValueChangeListener(event -> {
+            if (selectDiscipline.getValue() != null){
+                controls.clear();
+                controls.addAll(plansServices.getTypeControl(selectFaculty.getValue(), selectDepartment.getValue(), selectSpecialty.getValue(), selectCourse.getValue(), selectGroup.getValue(), selectDiscipline.getValue()));
+                selectControlType.setItems(controls);
+
+            } else selectControlType.setValue(null);
+        });
+
+        selectControlType.addValueChangeListener(event -> {
+
+
+            List<MarksModel> marksModels = new ArrayList<>();
+            studentGrid.setItems(marksModels);
+            studentGrid.removeAllColumns();
+
+            if (selectControlType.getValue() != null) {
+
+                marksModels  = markServices.getMarks(selectFaculty.getValue(), selectDepartment.getValue(), selectSpecialty.getValue(), selectCourse.getValue(), selectGroup.getValue(), selectDiscipline.getValue(), selectControlType.getValue());
+
+                studentGrid.setSelectionMode(Grid.SelectionMode.MULTI);
+
+                studentGrid.addColumn(MarksModel::getId).setHeader("№").setWidth("35px").setFlexGrow(0);
+                studentGrid.addColumn(MarksModel::getPIB).setHeader("ПІБ студента").setWidth("200px").setAutoWidth(true);
+
+                switch (selectControlType.getValue()) {
+                    case ("Залік"):
+                    case ("Екзамен"):
+                    case ("Диференційний залік"):
+                    case ("Курсова робота"):
+                    case ("Курсовий проєкт"):
+                        createTextField();
+                        studentGrid.addColumn(MarksModel::getMarkSum).setHeader("Сума за модулі").setWidth("120px").setAutoWidth(true).setTextAlign(ColumnTextAlign.CENTER);
+                        studentGrid.addColumn(MarksModel::getNationalScale).setHeader("Оцінка за національною шкалою").setWidth("160px").setAutoWidth(true).setTextAlign(ColumnTextAlign.CENTER);
+                        studentGrid.addColumn(MarksModel::getECTS).setHeader("ECTS").setWidth("80px").setAutoWidth(true).setTextAlign(ColumnTextAlign.CENTER);
+                        break;
+                    case ("Перший модульний контроль"):
+                        createTextField();
+                        break;
+                    case ("Другий модульний контроль"):
+                        studentGrid.addColumn(MarksModel::getMarkFirstModule).setHeader("Перший модуль").setWidth("100px").setAutoWidth(true).setTextAlign(ColumnTextAlign.CENTER);
+                        createTextField();
+                        studentGrid.addColumn(MarksModel::getMarkSum).setHeader("Сума за модулі").setWidth("100px").setAutoWidth(true).setTextAlign(ColumnTextAlign.CENTER);
+                        break;
+                    case ("Розрахункова робота"):
+                    case ("Розрахунково-графічна робота"):
+                        if (marksModels.get(0).getPart2()!=null){
+                            createTextField("РГР1", 1);
+                            createTextField("РГР2", 2);
+                        }
+                        if (marksModels.get(0).getPart4()!=null){
+                            createTextField("РГР3", 3);
+                            createTextField("РГР4", 4);
+                        }
+                        if (marksModels.get(0).getPart6()!=null){
+                            createTextField("РГР5", 5);
+                            createTextField("РГР6", 6);
+                        }
+                        if (marksModels.get(0).getPart8()!=null){
+                            createTextField("РГР7", 7);
+                            createTextField("РГР8", 8);
+                        }
+                        studentGrid.addColumn(MarksModel::getMark).setHeader("Оцінка").setWidth("80px").setAutoWidth(true);
+                        break;
+                }
+                studentGrid.addColumn(new ComponentRenderer<>(MarksModel::getEnabled)).setHeader("Статус").setWidth("80px").setFlexGrow(0).setTextAlign(ColumnTextAlign.CENTER);;
+                studentGrid.addColumn(MarksModel::getDate).setHeader("Дата зміни").setWidth("120px").setAutoWidth(true).setTextAlign(ColumnTextAlign.CENTER);
+                studentGrid.addColumn(MarksModel::getUser).setHeader("Користувач").setWidth("250px").setAutoWidth(true).setTextAlign(ColumnTextAlign.CENTER);
+
+                studentGrid.setItems(marksModels);
+            }
+        });
+
+        saveButton.addClickListener(event -> {
+
+            studentGrid.getDataProvider().refreshAll();
+
+            List<MarksModel> marksModels = studentGrid.getDataProvider().fetch(new Query<>()).toList();
+            for (MarksModel marksModel : marksModels){
+                markServices.saveMarks(marksModel, selectControlType.getValue());
+            }
+
+            marksModels  = markServices.getMarks(selectFaculty.getValue(), selectDepartment.getValue(), selectSpecialty.getValue(), selectCourse.getValue(), selectGroup.getValue(), selectDiscipline.getValue(), selectControlType.getValue());
+            studentGrid.setItems(marksModels);
+
+        });
+
+        approveButton.addClickListener(event -> {
+
+            DocxUpdaterService docxUpdaterService = new DocxUpdaterService();
+            docxUpdaterService.DocxUpdater();
 
 
 
+            DocumentPdfGenerator generator = new DocumentPdfGenerator();
+            generator.generateDocument(); // Генерація PDF
+
+            // Шлях до згенерованого PDF файлу
+            String finalFilePath = "uploads/mcontrol1u.pdf";
+
+            // Перевірка чи файл існує
+            File pdfFile = new File(finalFilePath);
+            if (pdfFile.exists()) {
+                // Створення StreamResource для передачі файлу у браузер
+                StreamResource resource = new StreamResource("mcontrol1u.pdf", () -> {
+                    try {
+                        return new FileInputStream(pdfFile);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Notification.show("Помилка при завантаженні файлу");
+                        return null;
+                    }
+                });
+
+                // Використання компонента Anchor для створення посилання на ресурс
+                com.vaadin.flow.component.html.Anchor downloadLink = new com.vaadin.flow.component.html.Anchor(resource, "");
+                downloadLink.getElement().setAttribute("download", true); // Додає атрибут для завантаження файлу
+                downloadLink.getElement().setAttribute("target", "_blank"); // Відкриває у новій вкладці
+                add(downloadLink);
+
+                // Виконання JavaScript для симуляції кліку на посиланні
+                UI.getCurrent().getPage().executeJs("document.querySelector('a[download]').click();");
+            } else {
+                Notification.show("PDF файл не знайдено.");
+            }
+
+        });
     }
+
+    private void createTextField(){
+        studentGrid.addColumn(new ComponentRenderer<>(item -> {
+
+            TextField textField = new TextField();
+            textField.setValue(String.valueOf(item.getMark()));
+            textField.setWidth("80px");
+            textField.getStyle().set("--vaadin-input-field-background", "white");
+            textField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_CENTER);
+            textField.getStyle().set("border-bottom", "1px solid black");
+
+            textField.addValueChangeListener(event2 -> {
+                // Оновлюємо значення в об'єкті MarksModel
+                item.setMark(event2.getValue());
+            });
+
+            return textField;
+        })).setHeader("Оцінка").setWidth("80px").setTextAlign(ColumnTextAlign.CENTER).setAutoWidth(true);
+    }
+
+    private void createTextField(String header, int i){
+        studentGrid.addColumn(new ComponentRenderer<>(item -> {
+
+            TextField textField = new TextField();
+
+            if (i == 1) {
+                textField.setValue(String.valueOf(item.getPart1()));
+                textField.addValueChangeListener(event2 -> {
+                    // Оновлюємо значення в об'єкті MarksModel
+                    item.setPart1(event2.getValue());
+                    studentGrid.getDataProvider().refreshAll();
+                });
+            }
+            if (i == 2) {
+                textField.setValue(String.valueOf(item.getPart2()));
+                textField.addValueChangeListener(event2 -> {
+                    // Оновлюємо значення в об'єкті MarksModel
+                    item.setPart2(event2.getValue());
+                    studentGrid.getDataProvider().refreshAll();
+                });
+            }
+            if (i == 3) {
+                textField.setValue(String.valueOf(item.getPart3()));
+                textField.addValueChangeListener(event2 -> {
+                    // Оновлюємо значення в об'єкті MarksModel
+                    item.setPart3(event2.getValue());
+                    studentGrid.getDataProvider().refreshAll();
+                });
+            }
+            if (i == 4) {
+                textField.setValue(String.valueOf(item.getPart4()));
+                textField.addValueChangeListener(event2 -> {
+                    // Оновлюємо значення в об'єкті MarksModel
+                    item.setPart4(event2.getValue());
+                    studentGrid.getDataProvider().refreshAll();
+                });
+            }
+            if (i == 5) {
+                textField.setValue(String.valueOf(item.getPart5()));
+                textField.addValueChangeListener(event2 -> {
+                    // Оновлюємо значення в об'єкті MarksModel
+                    item.setPart5(event2.getValue());
+                    studentGrid.getDataProvider().refreshAll();
+                });
+            }
+            if (i == 6) {
+                textField.setValue(String.valueOf(item.getPart6()));
+                textField.addValueChangeListener(event2 -> {
+                    // Оновлюємо значення в об'єкті MarksModel
+                    item.setPart6(event2.getValue());
+                    studentGrid.getDataProvider().refreshAll();
+                });
+            }
+            if (i == 7) {
+                textField.setValue(String.valueOf(item.getPart7()));
+                textField.addValueChangeListener(event2 -> {
+                    // Оновлюємо значення в об'єкті MarksModel
+                    item.setPart7(event2.getValue());
+                    studentGrid.getDataProvider().refreshAll();
+                });
+            }
+            if (i == 8) {
+                textField.setValue(String.valueOf(item.getPart8()));
+                textField.addValueChangeListener(event2 -> {
+                    // Оновлюємо значення в об'єкті MarksModel
+                    item.setPart8(event2.getValue());
+                    studentGrid.getDataProvider().refreshAll();
+                });
+            }
+
+            textField.setWidth("80px");
+            textField.getStyle().set("--vaadin-input-field-background", "white");
+            textField.addThemeVariants(TextFieldVariant.LUMO_ALIGN_CENTER);
+            textField.getStyle().set("border-bottom", "1px solid black");
+
+
+
+            return textField;
+        })).setHeader(header).setWidth("80px").setTextAlign(ColumnTextAlign.CENTER).setAutoWidth(true);
+    }
+
+
+
+
+
 }

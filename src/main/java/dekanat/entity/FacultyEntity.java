@@ -18,4 +18,5 @@ public class FacultyEntity {
     @Id
     private long id;
     private String title;
+    private String abr;
 }

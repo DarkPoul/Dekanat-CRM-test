@@ -2,6 +2,7 @@ package dekanat.repository;
 
 import dekanat.entity.StudentEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -15,13 +16,15 @@ public interface StudentRepo extends JpaRepository<StudentEntity, Long> {
 
     StudentEntity findByGroupAndCourseAndNumberAndYearAndSurnameAndNameAndPatronymic(String group, String course, String number, String year, String SurName, String name, String patronymic);
 
-    List<StudentEntity> findByFaculty(long faculty);
+    @Query("SELECT DISTINCT s.group FROM StudentEntity s WHERE s.faculty = ?1")
+    List<String> findDistinctGroupsByFaculty(int faculty);
 
-//    List<StudentEntity> findAllByDepartmentAndFaculty(int department, int faculty);
-//
-//    List<StudentEntity> findAllByDepartmentAndFacultyAndGroup(int department, int faculty, String spec);
-//    List<StudentEntity> findAllByDepartmentAndFacultyAndGroupAndCourse(int department, int faculty, String spec, String course);
-//    StudentEntity findFirstByDepartmentAndFacultyAndGroupAndCourseAndNumber(int department, int faculty, String spec, String course, String number);
+    List<StudentEntity> findAllByGroup(String title);
+
+    List<StudentEntity> findAllByGroupAndCourse(String group, String course);
+
+    StudentEntity findBySurnameAndNameAndPatronymic(String p, String i, String b);
+
 
 
 }

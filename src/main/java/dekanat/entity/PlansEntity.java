@@ -1,5 +1,6 @@
 package dekanat.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -26,4 +27,7 @@ public class PlansEntity {
     private int second;
     private int parts;
     private int department;
+    private int faculty;
+    @Column(name = "`group`")
+    private String group;
 }

@@ -13,6 +13,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: rootpassword
     depends_on:
       - db
+    restart: always
 
   db:
     image: mysql:8.0
@@ -21,3 +22,4 @@ services:
       MYSQL_DATABASE: mydb
     ports:
       - "3306:3306"
+    restart: always
