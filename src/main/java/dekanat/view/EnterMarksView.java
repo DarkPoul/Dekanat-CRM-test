@@ -369,7 +369,36 @@ public class EnterMarksView extends Div {
                             students10
                     );
             DocxUpdater docxUpdater = new DocxUpdater();
-            docxUpdater.generateForMC1(data10);
+            String path = docxUpdater.generateForMC1(data10);
+
+            // Шлях до згенерованого PDF файлу
+            String finalFilePath = "uploads/mcontrol1u.pdf";
+
+            // Перевірка чи файл існує
+            File pdfFile = new File(path);
+            if (pdfFile.exists()) {
+                // Створення StreamResource для передачі файлу у браузер
+                StreamResource resource = new StreamResource("mcontrol1u.pdf", () -> {
+                    try {
+                        return new FileInputStream(pdfFile);
+                    } catch (IOException e) {
+                        e.fillInStackTrace();
+                        Notification.show("Помилка при завантаженні файлу");
+                        return null;
+                    }
+                });
+
+                // Використання компонента Anchor для створення посилання на ресурс
+                com.vaadin.flow.component.html.Anchor downloadLink = new com.vaadin.flow.component.html.Anchor(resource, "");
+                downloadLink.getElement().setAttribute("download", true); // Додає атрибут для завантаження файлу
+                downloadLink.getElement().setAttribute("target", "_blank"); // Відкриває у новій вкладці
+                add(downloadLink);
+
+                // Виконання JavaScript для симуляції кліку на посиланні
+                UI.getCurrent().getPage().executeJs("document.querySelector('a[download]').click();");
+            } else {
+                Notification.show("PDF файл не знайдено.");
+            }
 
         });
     }

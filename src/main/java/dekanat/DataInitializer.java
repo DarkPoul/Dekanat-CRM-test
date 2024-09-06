@@ -98,6 +98,8 @@ public class DataInitializer implements CommandLineRunner {
             ControlEntity controlEntity6 = new ControlEntity(6L, "Розрахункова робота", "2");
             ControlEntity controlEntity7 = new ControlEntity(7L, "Розрахунково-графічна робота", "2");
             ControlEntity controlEntity8 = new ControlEntity(8L, "Відсутній", "2");
+            ControlEntity controlEntity9 = new ControlEntity(9L, "Перший модульний контроль", "3");
+            ControlEntity controlEntity10 = new ControlEntity(10L, "Другий модульний контроль", "3");
             List<ControlEntity> controlEntities = new ArrayList<>();
             controlEntities.add(controlEntity1);
             controlEntities.add(controlEntity2);
@@ -107,6 +109,8 @@ public class DataInitializer implements CommandLineRunner {
             controlEntities.add(controlEntity6);
             controlEntities.add(controlEntity7);
             controlEntities.add(controlEntity8);
+            controlEntities.add(controlEntity9);
+            controlEntities.add(controlEntity10);
 
             controlRepo.saveAll(controlEntities);
             System.out.println("Control methods added!");

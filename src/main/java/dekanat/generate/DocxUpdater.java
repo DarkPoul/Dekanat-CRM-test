@@ -16,7 +16,7 @@ public class DocxUpdater {
     public DocxUpdater() {
     }
 
-    public void generateForMC1(DataModelForMC1 data) {
+    public String generateForMC1(DataModelForMC1 data) {
 
         int i = 26; //Кількість студентів від яких йде весь розрахунок для перенесення таблиці на нову сторінку
 
@@ -35,7 +35,6 @@ public class DocxUpdater {
 
             if (tables.size() < 2) {
                 System.out.println("У документі немає другої таблиці.");
-                return;
             }
 
             XWPFTable table = tables.get(1);
@@ -125,6 +124,8 @@ public class DocxUpdater {
         } catch (IOException | InterruptedException e) {
             e.fillInStackTrace();
         }
+
+        return finalFilePath.split("\\.")[0] + students.size() + "." + finalFilePath.split("\\.")[1];
     }
     public void generateForMC2(DataModelForMC2 date){
 
