@@ -18,6 +18,8 @@ public class DocxUpdater {
 
     public void generateForMC1(DataModelForMC1 data) {
 
+        System.out.println("################################## START ##############################################");
+
         int i = 26; //Кількість студентів від яких йде весь розрахунок для перенесення таблиці на нову сторінку
 
         String inputFilePath = "upload/firstControl.docx";
@@ -112,7 +114,7 @@ public class DocxUpdater {
             try (FileOutputStream fos = new FileOutputStream(tempFilePath)) {
                 System.out.println("word to pdf");
                 document.write(fos);
-                runJar("WordToDocxConverter.jar", tempFilePath, "uploads/firstControl.pdf");
+                runJar("WordToDocxConverter.jar", tempFilePath, finalFilePath);
             }
 
             File file = new File(tempFilePath);
