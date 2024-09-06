@@ -22,9 +22,9 @@ public class DocxUpdater {
 
         int i = 26; //Кількість студентів від яких йде весь розрахунок для перенесення таблиці на нову сторінку
 
-        String inputFilePath = "upload/firstControl.docx";
-        String tempFilePath = "upload/firstControlTemp.docx";
-        String finalFilePath = "upload/" + inputFilePath.split("/")[1].split("\\.")[0] + ".pdf";
+        String inputFilePath = "uploads/firstControl.docx";
+        String tempFilePath = "uploads/firstControlTemp.docx";
+        String finalFilePath = "uploads/" + inputFilePath.split("/")[1].split("\\.")[0] + ".pdf";
 
         List<StudentModelToDocumentGenerate> students = data.students();
 
