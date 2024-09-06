@@ -28,6 +28,9 @@ import com.vaadin.flow.spring.security.AuthenticationContext;
 import dekanat.component.MainLayout;
 import dekanat.entity.*;
 
+import dekanat.generate.DataModelForMC1;
+import dekanat.generate.DocxUpdater;
+import dekanat.generate.StudentModelToDocumentGenerate;
 import dekanat.model.MarksModel;
 import dekanat.model.PlansModel;
 import dekanat.repository.ControlRepo;
@@ -332,42 +335,41 @@ public class EnterMarksView extends Div {
 
         approveButton.addClickListener(event -> {
 
-            DocxUpdaterService docxUpdaterService = new DocxUpdaterService();
-            docxUpdaterService.DocxUpdater();
+            List<StudentModelToDocumentGenerate> students10 = List.of
+                    (
+                            new StudentModelToDocumentGenerate(1, "Іванов Іван Іванович", "123456", 55),
+                            new StudentModelToDocumentGenerate(2, "Петров Петро Петрович", "234567", 48),
+                            new StudentModelToDocumentGenerate(3, "Сидорова Марія Олександрівна", "345678", 60),
+                            new StudentModelToDocumentGenerate(4, "Іванов Іван Іванович", "123456", 55),
+                            new StudentModelToDocumentGenerate(5, "Петров Петро Петрович", "234567", 48),
+                            new StudentModelToDocumentGenerate(6, "Сидорова Марія Олександрівна", "345678", 60),
+                            new StudentModelToDocumentGenerate(7, "Іванов Іван Іванович", "123456", 55),
+                            new StudentModelToDocumentGenerate(8, "Петров Петро Петрович", "234567", 48),
+                            new StudentModelToDocumentGenerate(9, "Сидорова Марія Олександрівна", "345678", 60),
+                            new StudentModelToDocumentGenerate(10, "Іванов Іван Іванович", "123456", 55)
+                    );
 
-
-
-            DocumentPdfGenerator generator = new DocumentPdfGenerator();
-            generator.generateDocument(); // Генерація PDF
-
-            // Шлях до згенерованого PDF файлу
-            String finalFilePath = "uploads/mcontrol1u.pdf";
-
-            // Перевірка чи файл існує
-            File pdfFile = new File(finalFilePath);
-            if (pdfFile.exists()) {
-                // Створення StreamResource для передачі файлу у браузер
-                StreamResource resource = new StreamResource("mcontrol1u.pdf", () -> {
-                    try {
-                        return new FileInputStream(pdfFile);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Notification.show("Помилка при завантаженні файлу");
-                        return null;
-                    }
-                });
-
-                // Використання компонента Anchor для створення посилання на ресурс
-                com.vaadin.flow.component.html.Anchor downloadLink = new com.vaadin.flow.component.html.Anchor(resource, "");
-                downloadLink.getElement().setAttribute("download", true); // Додає атрибут для завантаження файлу
-                downloadLink.getElement().setAttribute("target", "_blank"); // Відкриває у новій вкладці
-                add(downloadLink);
-
-                // Виконання JavaScript для симуляції кліку на посиланні
-                UI.getCurrent().getPage().executeJs("document.querySelector('a[download]').click();");
-            } else {
-                Notification.show("PDF файл не знайдено.");
-            }
+            DataModelForMC1 data10 = new DataModelForMC1
+                    (
+                            "Факультет транспортних та інформаційних технологій",
+                            "Інформаційна безпека в комп'ютеризованих системах",
+                            "4",
+                            "ІБК-4-1",
+                            "2024/2025",
+                            "23",
+                            "серпня",
+                            "2024",
+                            "Інформаційна безпека",
+                            "7",
+                            "Перший модульний контроль",
+                            "120",
+                            "Іванов Іван Іванович",
+                            "Клочан Арсен Євгенійович",
+                            "Клочан Арсен Євгенійович",
+                            students10
+                    );
+            DocxUpdater docxUpdater = new DocxUpdater();
+            docxUpdater.generateForMC1(data10);
 
         });
     }
