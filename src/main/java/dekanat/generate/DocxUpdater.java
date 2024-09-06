@@ -128,7 +128,7 @@ public class DocxUpdater {
 
         } catch (IOException | InterruptedException e) {
             System.out.println("################################## START3 ##############################################");
-            e.fillInStackTrace();
+            e.printStackTrace();
         }
     }
     public void generateForMC2(DataModelForMC2 date){
