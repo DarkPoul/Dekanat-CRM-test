@@ -45,6 +45,8 @@ public class DocxUpdater {
 
             for (StudentModelToDocumentGenerate student : students) {
 
+                System.out.println("################################## START 2 ##############################################");
+
                 if (students.size() <= i-3){ //якщо студентів менше ніж i - 3
                     XWPFTableRow newRow = table.createRow();
                     newRow.getCtRow().addNewTrPr().addNewTrHeight().setHRule(STHeightRule.EXACT);
@@ -125,6 +127,7 @@ public class DocxUpdater {
             } else System.out.println("Тимчасовий файл не знайдено");
 
         } catch (IOException | InterruptedException e) {
+            System.out.println("################################## START3 ##############################################");
             e.fillInStackTrace();
         }
     }
