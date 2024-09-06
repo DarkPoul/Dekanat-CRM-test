@@ -369,16 +369,16 @@ public class EnterMarksView extends Div {
                             students10
                     );
             DocxUpdater docxUpdater = new DocxUpdater();
-            String path = docxUpdater.generateForMC1(data10);
+            docxUpdater.generateForMC1(data10);
 
             // Шлях до згенерованого PDF файлу
-            String finalFilePath = "uploads/mcontrol1u.pdf";
+            String finalFilePath = "uploads/firstControl.pdf";
 
             // Перевірка чи файл існує
-            File pdfFile = new File(path);
+            File pdfFile = new File(finalFilePath);
             if (pdfFile.exists()) {
                 // Створення StreamResource для передачі файлу у браузер
-                StreamResource resource = new StreamResource("mcontrol1u.pdf", () -> {
+                StreamResource resource = new StreamResource("firstControl.pdf", () -> {
                     try {
                         return new FileInputStream(pdfFile);
                     } catch (IOException e) {
