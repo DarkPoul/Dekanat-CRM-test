@@ -1,6 +1,18 @@
 # Вказуємо базовий образ для зборки
 FROM eclipse-temurin:17-jdk-jammy AS build
 
+RUN apt-get update && \
+    apt-get install -y \
+    software-properties-common \
+    apt-transport-https \
+    && add-apt-repository universe && \
+    apt-get update && \
+    apt-get install -y \
+    ttf-mscorefonts-installer \
+    fontconfig \
+    --no-install-recommends && \
+    fc-cache -f -v
+
 # Копіюємо всі файли проекту в контейнер
 WORKDIR /app
 COPY . .
