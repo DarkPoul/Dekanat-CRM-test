@@ -166,7 +166,6 @@ public class MarkServices {
                                         marksModel.getPIB().split(" ")[2]
                                 )
                 );
-        System.out.println("Loshara");
         if (control.equals("Розрахункова робота") || control.equals("Розрахунково-графічна робота")){
             System.out.println("Start rgr");
             StringBuilder mark = new StringBuilder(marksModel.getPart1() + ",");
@@ -196,9 +195,8 @@ public class MarkServices {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Object principal = authentication.getPrincipal();
         String email = ((UserDetails) principal).getUsername();
-        String user = customUserDetailsService.getPIB(email);
 
-        markEntity.setUser(String.valueOf(userRepository.findByLastnameAndFirstnameAndPatronymic(user.split(" ")[0], user.split(" ")[1], user.split(" ")[2]).getId()));
+        markEntity.setUser(String.valueOf(userRepository.findByEmail(email).get().getId()));
         markEntity.setEnabled(isEnabled(marksModel.getEnabled()));
 
         markRepo.save(markEntity);
