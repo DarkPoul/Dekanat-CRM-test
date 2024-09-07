@@ -166,6 +166,7 @@ public class MarkServices {
                                         marksModel.getPIB().split(" ")[2]
                                 )
                 );
+        System.out.println("Loshara");
         if (control.equals("Розрахункова робота") || control.equals("Розрахунково-графічна робота")){
             System.out.println("Start rgr");
             StringBuilder mark = new StringBuilder(marksModel.getPart1() + ",");
