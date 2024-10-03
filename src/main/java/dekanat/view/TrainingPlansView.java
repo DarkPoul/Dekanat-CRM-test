@@ -55,6 +55,7 @@ public class TrainingPlansView extends Div {
 
 
         newItemButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        newItemButton.getStyle().set("margin", "20px 20px 20px 20px");
 
         groupSelect.setLabel("Група");
         groupSelect.setItems(studentService.getAllGroups());
@@ -115,7 +116,12 @@ public class TrainingPlansView extends Div {
         HorizontalLayout filterLayout = new HorizontalLayout();
         HorizontalLayout tableLayout = new HorizontalLayout();
 
+        filterLayout.getStyle().set("padding", "20px 20px 0px 20px");
+        tableLayout.getStyle().set("padding", "20px");
         tableLayout.setHeight("80%");
+
+        // Apply padding to grid
+        trainingPlansGrid.getStyle().set("padding", "10px");
 
         filterLayout.add(groupSelect, sessionSelect);
         tableLayout.add(trainingPlansGrid);

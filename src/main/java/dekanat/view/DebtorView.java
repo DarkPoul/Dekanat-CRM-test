@@ -1,119 +1,175 @@
 package dekanat.view;
 
-
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.data.provider.CallbackDataProvider;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.textfield.TextField;
 import dekanat.component.MainLayout;
 import dekanat.model.DebtorModel;
+import dekanat.model.DebtorReasonModel;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
+import java.util.List;
 
 @PageTitle("Боржники | Деканат")
 @Route(value = "debtor", layout = MainLayout.class)
 @Component
 @UIScope
 @PermitAll
-//@RolesAllowed("")
 public class DebtorView extends Div {
     private VerticalLayout mainLayout = new VerticalLayout();
-    private VerticalLayout leftLayout = new VerticalLayout();
-    private VerticalLayout rightLayout = new VerticalLayout();
     private HorizontalLayout selectors = new HorizontalLayout();
-    private HorizontalLayout gridLayout = new HorizontalLayout();
-    private HorizontalLayout countLabels1 = new HorizontalLayout();
-    private HorizontalLayout countLabels2 = new HorizontalLayout();
-    private Select<String> selectFaculty = new Select<>();
-    private Select<String> selectCourse = new Select<>();
+    private VerticalLayout studentColumn = new VerticalLayout();
+    private VerticalLayout disciplineColumn = new VerticalLayout();
     private Select<String> selectGroup = new Select<>();
-    private Select<String> selectGroupNumber = new Select<>();
+    private TextField orderField = new TextField();
+    private DatePicker dateField = new DatePicker();
+    private Button transferButton = new Button("Переведення");
     private Grid<DebtorModel> studentGrid = new Grid<>(DebtorModel.class, false);
-    private Grid<String> reasonGrid = new Grid<>();
-    private Span totalStudentsLabel = new Span();
-    private Span totalStudentsInt = new Span();
-    private Span arrearsCountLabel = new Span();
-    private Span arrearsCountInt = new Span();
+    private Grid<DebtorReasonModel> disciplineGrid = new Grid<>(DebtorReasonModel.class, false);
 
     public DebtorView() {
-        selectFaculty.setLabel("Факультет");
-        selectFaculty.setItems("Транспортних та інформаційних технологій", "Інші факультети");
-        selectFaculty.setWidth("100%");
-
-        selectCourse.setLabel("Курс");
-        selectCourse.setItems("1", "2", "3", "4", "Всі");
-        selectCourse.setWidth("100%");
-
+        // Настройка селекторов
         selectGroup.setLabel("Група");
-        selectGroup.setItems("МП", "Інші групи");
-        selectGroup.setWidth("100%");
+        selectGroup.setItems("МП", "ІБК","КН","ДЗ","КІ");
+        selectGroup.getStyle().set("width", "37%");
+        selectGroup.getStyle().set("padding-left", "10px");
 
-        selectGroupNumber.setLabel("Номер групи");
-        selectGroupNumber.setItems("Всі", "1", "2", "3", "4");
-        selectGroupNumber.setWidth("100%");
+        orderField.setLabel("Наказ");
 
-        studentGrid.addColumn(DebtorModel::getLastName).setHeader("Прізвище").setAutoWidth(true);
-        studentGrid.addColumn(DebtorModel::getFirstName).setHeader("Ім'я").setAutoWidth(true);
-        studentGrid.addColumn(DebtorModel::getPatronymic).setHeader("По батькові").setAutoWidth(true);
-        studentGrid.addColumn(DebtorModel::getCourseYear).setHeader("Рік Курсу").setAutoWidth(true);
+        dateField.setI18n(setLocal());
+        dateField.setLabel("Дата");
 
-        studentGrid.setItems(
-                new DebtorModel("Абраменко", "Олексій", "Романович", 21),
-                new DebtorModel("Костюк", "Максим", "Миколайович", 21),
-                new DebtorModel("Крисько", "Віталій", "Андрійович", 21),
-                new DebtorModel("Лемзяков", "Олександр", "Віталійович", 21),
-                new DebtorModel("Тріц", "Дмитро", "Вікторович", 21),
-                new DebtorModel("Тушенко", "Нікіта", "Миколайович", 21),
-                new DebtorModel("Юрченя", "Владислав", "Юрійович", 21)
-        );
+        // Центрирование кнопки
+        transferButton.getStyle().set("margin", "35px auto 0px");
+        selectors.add(selectGroup, orderField, dateField, transferButton);
+        selectors.setWidth("100%");
+        selectors.setSpacing(true);
+        selectors.getStyle().set("border", "1px solid #ddd");
+        selectors.getStyle().set("border-radius", "8px");
+        selectors.getStyle().set("box-shadow", "0 2px 4px rgba(0, 0, 0, 0.1)");
+        selectors.getStyle().set("padding", "5px");
+        selectors.getStyle().set("position", "relative");
+        selectors.getStyle().set("background", "white");
+
+
+        studentGrid.addColumn(DebtorModel::getLastName).setHeader("Студент").setAutoWidth(true);
+        studentGrid.addColumn(DebtorModel::getCourseYear).setHeader("Готовий").setWidth("90px").setFlexGrow(0);;
+
 
         studentGrid.getStyle().set("border", "1px solid #ddd");
         studentGrid.getStyle().set("border-radius", "8px");
         studentGrid.getStyle().set("box-shadow", "0 2px 4px rgba(0, 0, 0, 0.1)");
         studentGrid.getStyle().set("position", "relative");
+        studentGrid.getStyle().set("width", "100%");
 
-        reasonGrid.addColumn(String::toString).setHeader("Причини");
-        reasonGrid.setItems(
-                "Неявка на екзамен",
-                "Неуспішна здача сесії",
-                "Проблеми з академічною доброчесністю",
-                "Інші причини"
+        studentGrid.addAttachListener(event -> {
+            studentGrid.getElement().executeJs(
+                    "this.shadowRoot.querySelector('#table').style.marginTop = '5px'; " +
+                            "this.shadowRoot.querySelector('#table').style.marginBottom = '5px'; "
+            );
+        });
+
+        // Добавление данных в таблицу студентов
+        studentGrid.setItems(
+                new DebtorModel("Іванов", "qwe", "qwe", 1),
+                new DebtorModel("Петров","qwe", "qwe", 0),
+                new DebtorModel("Сидоров","qwe", "qwe", 1),
+                new DebtorModel("Коваленко","qwe", "qwe", 0),
+                new DebtorModel("Шевченко","qwe", "qwe", 1),
+                new DebtorModel("Мельник","qwe", "qwe", 0),
+                new DebtorModel("Кравченко","qwe", "qwe", 1),
+                new DebtorModel("Бондаренко","qwe", "qwe", 0),
+                new DebtorModel("Гончар","qwe", "qwe", 1),
+                new DebtorModel("Дорошенко","qwe", "qwe", 0)
         );
 
-        reasonGrid.getStyle().set("border", "1px solid #ddd");
-        reasonGrid.getStyle().set("border-radius", "8px");
-        reasonGrid.getStyle().set("box-shadow", "0 2px 4px rgba(0, 0, 0, 0.1)");
-        reasonGrid.getStyle().set("position", "relative");
+        // Добавляем таблицу студентов в левую колонку
+        studentColumn.add(studentGrid);
+        studentColumn.getStyle().set("padding", "0px");
+        studentColumn.setWidth("37%"); // Ширина колонки с таблицей студентов
 
-        totalStudentsLabel.setText("Кількість студентів які мають заборгованості:");
-        arrearsCountLabel.setText("Кількість заборгованостей студента Костюк М.М. [ МП-3-1(21) ]:");
-        totalStudentsInt.setText("7");
-        arrearsCountInt.setText("8");
+        // Настройка таблицы дисциплин
+        disciplineGrid.addColumn(DebtorReasonModel::getCode).setHeader("Семестр").setWidth("100px").setFlexGrow(0);
+        disciplineGrid.addColumn(DebtorReasonModel::getName).setHeader("Дисципліна").setAutoWidth(true);
+        disciplineGrid.addColumn(DebtorReasonModel::getReason).setHeader("Причини").setAutoWidth(true);
 
-        selectors.add(selectFaculty, selectCourse, selectGroup, selectGroupNumber);
-        selectors.setWidth("100%");
+        disciplineGrid.getStyle().set("border", "1px solid #ddd");
+        disciplineGrid.getStyle().set("border-radius", "8px");
+        disciplineGrid.getStyle().set("box-shadow", "0 2px 4px rgba(0, 0, 0, 0.1)");
+        disciplineGrid.getStyle().set("position", "relative");
+        disciplineGrid.getStyle().set("width", "100%");
 
-        countLabels1.add(totalStudentsLabel, totalStudentsInt);
-        countLabels2.add(arrearsCountLabel, arrearsCountInt);
+        disciplineGrid.addAttachListener(event -> {
+            disciplineGrid.getElement().executeJs(
+                    "this.shadowRoot.querySelector('#table').style.marginTop = '5px'; " +
+                            "this.shadowRoot.querySelector('#table').style.marginBottom = '5px'; "
+            );
+        });
 
-        leftLayout.add(studentGrid, countLabels1);
-        rightLayout.add(reasonGrid, countLabels2);
-        gridLayout.add(leftLayout, rightLayout);
-        mainLayout.add(selectors, gridLayout);
+        disciplineGrid.setItems(
+                new DebtorReasonModel(1, "Математика", "Модуль"),
+                new DebtorReasonModel(2, "Фізика", "РГР"),
+                new DebtorReasonModel(3, "Інформатика", "Курсовая"),
+                new DebtorReasonModel(4, "Хімія", "Модуль"),
+                new DebtorReasonModel(5, "Біологія", "РГР"),
+                new DebtorReasonModel(6, "Історія", "Курсовая"),
+                new DebtorReasonModel(7, "Географія", "Модуль"),
+                new DebtorReasonModel(1, "Література", "РГР"),
+                new DebtorReasonModel(2, "Економіка", "Курсовая"),
+                new DebtorReasonModel(3, "Філософія", "Модуль")
+        );
 
-        gridLayout.setWidth("100%");
-        mainLayout.setHeight("100%");
-        leftLayout.setHeight("100%");
-        leftLayout.setWidth("100%");
-        leftLayout.getStyle().set("padding", "0px");
-        rightLayout.getStyle().set("padding", "0px");
+        // Добавляем таблицу дисциплин в правую колонку
+        disciplineColumn.add(disciplineGrid);
+        disciplineColumn.getStyle().set("padding", "0px");
+        disciplineColumn.setWidth("62%"); // Ширина колонки с таблицей дисциплин
 
+        // Добавляем элементы на основную страницу
+        HorizontalLayout contentLayout = new HorizontalLayout(studentColumn, disciplineColumn);
+        contentLayout.getStyle().set("border", "1px solid #ddd");
+        contentLayout.getStyle().set("border-radius", "8px");
+        contentLayout.getStyle().set("box-shadow", "0 2px 4px rgba(0, 0, 0, 0.1)");
+        contentLayout.getStyle().set("padding", "10px");
+        contentLayout.getStyle().set("position", "relative");
+        contentLayout.getStyle().set("background", "white");
+        contentLayout.getStyle().set("border-top-width", "0px");
+        contentLayout.setWidthFull(); // Занять всю ширину
+        contentLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        contentLayout.setWidth("100%");
+        contentLayout.setHeight("600px"); // Установите необходимую высоту
+
+        mainLayout.add(selectors, contentLayout);
+        mainLayout.setSizeFull();
+        mainLayout.setSizeFull();
+        mainLayout.getStyle().set("gap", "0px");
         add(mainLayout);
-        setHeight("100%");
+    }
+
+    private DatePicker.DatePickerI18n setLocal() {
+        DatePicker.DatePickerI18n ukrainian = new DatePicker.DatePickerI18n();
+        ukrainian.setMonthNames(List.of("Січень", "Лютий", "Березень", "Квітень",
+                "Травень", "Червень", "Липень", "Серпень", "Вересень", "Жовтень",
+                "Листопад", "Грудень"));
+        ukrainian.setWeekdays(List.of("Неділя", "Понеділок", "Вівторок",
+                "Середа", "Четвер", "П'ятниця", "Субота"));
+        ukrainian.setWeekdaysShort(
+                List.of("Нд", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"));
+        ukrainian.setToday("Сьогодні");
+        ukrainian.setCancel("Скасувати");
+
+        return ukrainian;
     }
 }

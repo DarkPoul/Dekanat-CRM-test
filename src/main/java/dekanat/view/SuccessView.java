@@ -24,19 +24,19 @@ import java.util.List;
 @PageTitle("Успішність | Деканат")
 @Route(value = "success", layout = MainLayout.class)
 @Component
-@UIScope
 @PermitAll
+@UIScope
 public class SuccessView extends Div {
     private HorizontalLayout mainLayout = new HorizontalLayout();
     private VerticalLayout leftLayout = new VerticalLayout();
     private VerticalLayout rightLayout = new VerticalLayout();
     private HorizontalLayout synchronizationLayout = new HorizontalLayout();
-
-
     private Select<String> selectGroup = new Select<>();
     private Select<String> selectFirstStudent = new Select<>();
     private Select<String> selectSecondStudent = new Select<>();
     private Button buttonSynchronization = new Button("Перенести");
+    private Button buttonEditHours = new Button("Редагувати години");
+    private Button buttonEditDiscipline = new Button("Редагувати дисципліни");
     private ListBox<String> listStudents = new ListBox<>();
     private Grid<SuccessModel> marks = new Grid<>(SuccessModel.class, false);
 
@@ -45,33 +45,39 @@ public class SuccessView extends Div {
     public SuccessView(StudentService studentService) {
         this.studentService = studentService;
 
-
-
+        List<StudentModel> studentEntities = new ArrayList<>();
 
         selectGroup.setLabel("Оберіть групу");
         selectGroup.setItems(studentService.getAllGroups());
 
-
-
         selectGroup.addValueChangeListener(event -> {
+            studentEntities.clear();
 
-            System.out.println(true);
-
+            studentEntities.addAll(studentService.getStudents(selectGroup.getValue()));
             List<String> student = new ArrayList<>();
-            for (StudentModel students: studentService.getStudents(selectGroup.getValue())){
+            for (StudentModel students: studentEntities){
                 student.add(students.getSurname() + " " + students.getName() + " " + students.getPatronymic());
             }
 
             listStudents.setItems(student);
+
+            SuccessModel test = new SuccessModel("Математика", 1, "160", "90", "", "", "", "90", "90", "90");
+            SuccessModel test1 = new SuccessModel("Фізика", 2, "160", "", "95", "", "", "", "90", "90");
+            SuccessModel test2 = new SuccessModel("Хімія", 3, "160", "90", "", "", "", "90", "90", "90");
+            SuccessModel test3 = new SuccessModel("Англійська мова", 4, "160", "", "", "", "", "90", "90", "90");
+            SuccessModel test4 = new SuccessModel("Українська мова", 5, "160", "", "", "", "95", "90", "90", "90");
+            SuccessModel test5 = new SuccessModel("Історія України", 6, "160", "", "", "", "", "90", "90", "90");
+
+            marks.setItems(test, test1, test2, test3, test4, test5);
+
+
             selectFirstStudent.setItems(student);
             selectSecondStudent.setItems(student);
         });
 
         selectFirstStudent.setLabel("Перенести з");
-
         selectSecondStudent.setLabel("Перенести для");
-
-
+//        listStudents.setItems("Пупков", "Непупков");
         listStudents.getStyle().set("border", "1px solid #ddd");
         listStudents.getStyle().set("border-radius", "8px");
         listStudents.getStyle().set("box-shadow", "0 2px 4px rgba(0, 0, 0, 0.1)");
@@ -92,19 +98,21 @@ public class SuccessView extends Div {
         marks.addColumn(SuccessModel::getRr).setHeader("РР").setAutoWidth(true);
         marks.addColumn(SuccessModel::getRgr).setHeader("РГР").setAutoWidth(true);
 
-        SuccessModel test = new SuccessModel("Такато", 0, "160", "90", "95", "95", "95", "90", "90", "90");
 
-        marks.setItems(test);
         marks.getStyle().set("border", "1px solid #ddd");
         marks.getStyle().set("border-radius", "8px");
         marks.getStyle().set("box-shadow", "0 2px 4px rgba(0, 0, 0, 0.1)");
         marks.getStyle().set("padding", "20px");
         marks.getStyle().set("position", "relative");
         marks.getStyle().set("background", "white");
+        marks.getElement().executeJs(
+                "this.shadowRoot.querySelector('#table').style.marginTop = '5px'; " +
+                        "this.shadowRoot.querySelector('#table').style.marginBottom = '5px'; "
+        );
 
         leftLayout.add(selectGroup, listStudents);
-        synchronizationLayout.add(selectFirstStudent, selectSecondStudent, buttonSynchronization);
-        synchronizationLayout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.END); // Center items vertically
+        synchronizationLayout.add(selectFirstStudent, selectSecondStudent, buttonSynchronization, buttonEditHours, buttonEditDiscipline);
+        synchronizationLayout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.END); // Вирівнювання елементів вертикально
         rightLayout.add(synchronizationLayout, marks);
         mainLayout.add(leftLayout, rightLayout);
         mainLayout.setHeight("100%");
@@ -113,5 +121,6 @@ public class SuccessView extends Div {
 
         add(mainLayout);
         setHeight("100%");
+
     }
 }

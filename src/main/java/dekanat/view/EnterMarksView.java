@@ -151,6 +151,14 @@ public class EnterMarksView extends Div {
 
         buttonLayout.add(saveButton, approveButton, unlockButton, printReportButton, additionalReportButton);
 
+        buttonLayout.setWidth("100%"); // Занять всю ширину
+// Set flex grow for each button
+        buttonLayout.setFlexGrow(1, saveButton);
+        buttonLayout.setFlexGrow(1, approveButton);
+        buttonLayout.setFlexGrow(1, unlockButton);
+        buttonLayout.setFlexGrow(1, printReportButton);
+        buttonLayout.setFlexGrow(1, additionalReportButton);
+
         // Student Grid
 
 
@@ -161,15 +169,16 @@ public class EnterMarksView extends Div {
 
 
 
-        studentGrid.getStyle().set("border", "1px solid #ddd");
         studentGrid.getStyle().set("border-radius", "8px");
         studentGrid.getStyle().set("box-shadow", "0 2px 4px rgba(0, 0, 0, 0.1)");
         studentGrid.getStyle().set("position", "relative");
+        studentGrid.getStyle().set("background-color", "white"); // Установите фон
+        studentGrid.getStyle().set("padding", "16px");
 
         // Align the button layout at the top
         buttonLayout.setWidthFull();
         buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
-        buttonLayout.getStyle().set("gap", "5px");
+        buttonLayout.getStyle().set("gap", "10px");
 
         // Add the grid to the right layout
         rightLayout.getStyle().set("padding-left", "0px");

@@ -92,19 +92,16 @@ public class MainLayout extends AppLayout {
         Tabs tabs = new Tabs();
         tabs.add(
                 createTab(VaadinIcon.MENU, "Головна", HomeView.class),
-                createTab(VaadinIcon.BOOK, "Навчальні плани", TrainingPlansView.class),
+                createTab(VaadinIcon.CLIPBOARD_CHECK, "Навчальні плани", TrainingPlansView.class),
                 createTab(VaadinIcon.LINE_BAR_CHART, "Успішність", SuccessView.class),
                 createTab(VaadinIcon.ABACUS, "Боржники", DebtorView.class),
-                createTab(VaadinIcon.USER_CARD, "Перегляд інформації", StudentCardView.class),
+                createTab(VaadinIcon.LIST_SELECT, "Друк інформації", StudentCardView.class),
                 createTab(VaadinIcon.USER_CARD, "Перегляд карток", ReviewingCardsView.class),
                 createTab(VaadinIcon.PENCIL, "Введення оцінок", EnterMarksView.class),
-                createTab(VaadinIcon.USER, "Адмін", AdminView.class)
-//                createTab(VaadinIcon.ANGLE_DOUBLE_UP, "Переведення на курс"),
-//                createTab(VaadinIcon.PRINT, "Друк інформації"),
-//                createTab(VaadinIcon.BAR_CHART_H, "Модульний контроль"),
-//                createTab(VaadinIcon.CALC_BOOK, "Довідники"),
-//                createTab(VaadinIcon.ARCHIVE, "Архів")
-                // Додайте інші вкладки тут
+                createTab(VaadinIcon.ARCHIVE, "Архів", ArchiveView.class),
+                createTab(VaadinIcon.BOOK, "Довідники", HandbookView.class)
+//                ,
+//                createTab(VaadinIcon.USER, "Адмін", AdminView.class)
         );
         tabs.setOrientation(Tabs.Orientation.VERTICAL);
         addToDrawer(tabs);
