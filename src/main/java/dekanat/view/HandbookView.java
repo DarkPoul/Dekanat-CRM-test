@@ -67,6 +67,7 @@ public class HandbookView extends Div {
         disciplineGrid.getStyle().set("position", "relative");
         disciplineGrid.getStyle().set("background", "white");
         disciplineGrid.getStyle().set("min-height", "230px");
+        disciplineGrid.getStyle().set("height", "calc(100vh - 180px)"); // Adjust width to fit with 20px margin
         disciplineGrid.getElement().executeJs(
                 "this.shadowRoot.querySelector('#table').style.marginTop = '5px'; " +
                         "this.shadowRoot.querySelector('#table').style.marginBottom = '5px'; "
@@ -92,6 +93,7 @@ public class HandbookView extends Div {
         departmentGrid.getStyle().set("position", "relative");
         departmentGrid.getStyle().set("background", "white");
         departmentGrid.getStyle().set("min-height", "230px");
+        departmentGrid.getStyle().set("height", "calc(100vh - 180px)"); // Adjust width to fit with 20px margin
         departmentGrid.getElement().executeJs(
                 "this.shadowRoot.querySelector('#table').style.marginTop = '5px'; " +
                         "this.shadowRoot.querySelector('#table').style.marginBottom = '5px'; "
@@ -115,6 +117,7 @@ public class HandbookView extends Div {
         specialtyGrid.getStyle().set("position", "relative");
         specialtyGrid.getStyle().set("background", "white");
         specialtyGrid.getStyle().set("min-height", "230px");
+        specialtyGrid.getStyle().set("height", "calc(100vh - 180px)"); // Adjust width to fit with 20px margin
         specialtyGrid.getElement().executeJs(
                 "this.shadowRoot.querySelector('#table').style.marginTop = '5px'; " +
                         "this.shadowRoot.querySelector('#table').style.marginBottom = '5px'; "
@@ -134,6 +137,7 @@ public class HandbookView extends Div {
         mainLayout.add(tabs, disciplinesContent);
         mainLayout.setWidth("100%");
         mainLayout.setHeight("100%");
+        mainLayout.getStyle().set("gap", "0px");
         mainLayout.setAlignItems(FlexComponent.Alignment.CENTER);
 
         add(mainLayout);

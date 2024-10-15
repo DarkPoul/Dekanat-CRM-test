@@ -373,6 +373,8 @@ public class ReviewingCardsView extends Div {
             }
         });
         TextField fullAddressField = new TextField("Повна адреса");
+        TextField phoneNumberField = new TextField("Номер телефону");
+        TextField emailField = new TextField("E-mail");
         MultiSelectComboBox<String> benefitsSelect = new MultiSelectComboBox<>();
         benefitsSelect.setLabel("Пільги");
         benefitsSelect.setItems("Пільга 1", "Пільга 2", "Пільга 3"); // Приклад елементів
@@ -546,10 +548,33 @@ public class ReviewingCardsView extends Div {
 
         educationDetailsWrapper.add(educationDetailsTitle, educationDetailsLayout);
 
+        // Group 4: Education Details
+        Div contactDetailsWrapper = new Div();
+        contactDetailsWrapper.getStyle().set("border", "1px solid #ddd");
+        contactDetailsWrapper.getStyle().set("border-radius", "8px");
+        contactDetailsWrapper.getStyle().set("box-shadow", "0 2px 4px rgba(0, 0, 0, 0.1)");
+        contactDetailsWrapper.getStyle().set("padding", "20px");
+        contactDetailsWrapper.getStyle().set("position", "relative");
+        contactDetailsWrapper.getStyle().set("background", "white");
+        contactDetailsWrapper.getStyle().set("width", "97%"); // Set the width to 97%
+
+        Span contactDetailsTitle = new Span("Контактні дані");
+        contactDetailsTitle.getStyle().set("position", "absolute");
+        contactDetailsTitle.getStyle().set("top", "-10px");
+        contactDetailsTitle.getStyle().set("left", "20px");
+        contactDetailsTitle.getStyle().set("background", "white");
+        contactDetailsTitle.getStyle().set("padding", "0 10px");
+        contactDetailsTitle.getStyle().set("font-weight", "bold");
+
+        FormLayout contactDetailsLayout = new FormLayout();
+        contactDetailsLayout.add(phoneNumberField, emailField);
+
+        contactDetailsWrapper.add(contactDetailsTitle, contactDetailsLayout);
+
 // Layout for additional info text fields
         VerticalLayout additionalInfoLayout = new VerticalLayout();
         additionalInfoLayout.setWidth("100%");
-        additionalInfoLayout.add(educationDetailsWrapper, addressDetailsWrapper);
+        additionalInfoLayout.add(educationDetailsWrapper, addressDetailsWrapper, contactDetailsWrapper);
         additionalInfoLayout.getStyle().set("padding", "0px");
 
         VerticalLayout passportInfoLayout = new VerticalLayout();

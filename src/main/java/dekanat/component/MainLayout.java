@@ -99,7 +99,8 @@ public class MainLayout extends AppLayout {
                 createTab(VaadinIcon.USER_CARD, "Перегляд карток", ReviewingCardsView.class),
                 createTab(VaadinIcon.PENCIL, "Введення оцінок", EnterMarksView.class),
                 createTab(VaadinIcon.ARCHIVE, "Архів", ArchiveView.class),
-                createTab(VaadinIcon.BOOK, "Довідники", HandbookView.class)
+                createTab(VaadinIcon.BOOK, "Довідники", HandbookView.class),
+                createTab(VaadinIcon.BOOK, "Рейтинг студентів", StudentRatingView.class)
 //                ,
 //                createTab(VaadinIcon.USER, "Адмін", AdminView.class)
         );

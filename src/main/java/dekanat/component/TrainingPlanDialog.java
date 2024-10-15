@@ -49,7 +49,9 @@ public class TrainingPlanDialog extends Dialog {
     private final Button update = new Button("Оновити");
 
 
+
     private final VerticalLayout VLayoutStudent = new VerticalLayout();
+    private final Div scrollableDiv = new Div();
 
     Notification notification = new Notification();
 
@@ -112,6 +114,15 @@ public class TrainingPlanDialog extends Dialog {
 
 
 
+        scrollableDiv.setWidth("100%");
+        scrollableDiv.setHeight("400px"); // Adjust the height as needed
+        scrollableDiv.getStyle().set("overflow-y", "auto");
+
+        // Add the checkbox group and the select all checkbox to the scrollable div
+        scrollableDiv.add(checkboxGroup);
+
+        // Add the scrollable div to the vertical layout
+
 
 
 
@@ -161,10 +172,11 @@ public class TrainingPlanDialog extends Dialog {
         VerticalLayout VLayoutDisc2 = new VerticalLayout();
         VLayoutDisc2.add(hours, secondControl, parts);
 
-        VLayoutStudent.add(checkboxGroup, checkAllStudent);
+        VLayoutStudent.add(scrollableDiv, checkAllStudent);
         VLayoutStudent.setWidth("400px");
         VLayoutStudent.setHorizontalComponentAlignment(FlexComponent.Alignment.END, checkAllStudent);
         VLayoutStudent.getStyle().set("border", "1px solid #e0e0e0");
+        VLayoutStudent.getStyle().set("gap", "0px");
 
         HorizontalLayout HLayoutDisc = new HorizontalLayout();
         HLayoutDisc.add(VLayoutDisc1, VLayoutDisc2);

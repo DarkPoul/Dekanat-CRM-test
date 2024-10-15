@@ -69,7 +69,6 @@ public class EnterMarksView extends Div {
     private final CustomUserDetailsService customUserDetailsService;
 
     private VerticalLayout mainLayout = new VerticalLayout();
-    private HorizontalLayout topLayout = new HorizontalLayout();
     private HorizontalLayout contentLayout = new HorizontalLayout();
     private VerticalLayout leftLayout = new VerticalLayout();
     private VerticalLayout rightLayout = new VerticalLayout();
@@ -183,6 +182,7 @@ public class EnterMarksView extends Div {
         // Add the grid to the right layout
         rightLayout.getStyle().set("padding-left", "0px");
         rightLayout.add(buttonLayout, studentGrid);
+        rightLayout.getStyle().set("height", "calc(100vh - 80px)"); // Adjust width to fit with 20px margin
         rightLayout.setWidthFull();
 
         // Add the left layout and the button layout to a vertical layout
@@ -193,9 +193,10 @@ public class EnterMarksView extends Div {
         // Add leftContainer and rightLayout to the content layout
         contentLayout.add(leftContainer, rightLayout);
         contentLayout.setWidthFull();
+        contentLayout.getStyle().set("height", "calc(100vh - 80px)"); // Adjust width to fit with 20px margin
 
-        mainLayout.add(topLayout, contentLayout);
-        mainLayout.setSizeFull();
+        mainLayout.add(contentLayout);
+        mainLayout.getStyle().set("height", "calc(100vh - 80px)"); // Adjust width to fit with 20px margin
         add(mainLayout);
 
 
