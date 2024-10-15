@@ -110,6 +110,8 @@ public class TrainingPlanDialog extends Dialog {
         secondControl.setLabel("Другий контроль");
         parts.setLabel("Частини");
         depart.setLabel("Кафедра");
+        depart.getStyle().set("padding-left", "14px");
+        depart.getStyle().set("width", "500px");
 
 
 

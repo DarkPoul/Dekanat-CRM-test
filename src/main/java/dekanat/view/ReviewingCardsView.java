@@ -574,7 +574,7 @@ public class ReviewingCardsView extends Div {
 // Layout for additional info text fields
         VerticalLayout additionalInfoLayout = new VerticalLayout();
         additionalInfoLayout.setWidth("100%");
-        additionalInfoLayout.add(educationDetailsWrapper, addressDetailsWrapper, contactDetailsWrapper);
+        additionalInfoLayout.add(educationDetailsWrapper,contactDetailsWrapper, addressDetailsWrapper);
         additionalInfoLayout.getStyle().set("padding", "0px");
 
         VerticalLayout passportInfoLayout = new VerticalLayout();
