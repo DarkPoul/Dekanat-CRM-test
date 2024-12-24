@@ -4,6 +4,7 @@ package dekanat.view;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
+import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
@@ -17,6 +18,7 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.UIScope;
@@ -150,7 +152,7 @@ public class ReviewingCardsView extends Div {
         orderLeftTitle.getStyle().set("background", "white");
         orderLeftTitle.getStyle().set("padding", "0 10px");
         orderLeftTitle.getStyle().set("font-weight", "bold");
-        orderLeftTitle.getStyle().set("z-index", "100000");
+        orderLeftTitle.getStyle().set("z-index", "1");
 
         orderGridWrapper.add(orderLeftTitle, orderGrid);
         orderGridWrapper.getStyle().set("width", "100%");
@@ -158,6 +160,35 @@ public class ReviewingCardsView extends Div {
         // Create a main layout for the left and right sections
         HorizontalLayout orderLayout = new HorizontalLayout();
         orderLayout.setWidth("100%");
+        ContextMenu contextMenu = new ContextMenu(orderGrid);
+
+        contextMenu.addItem("Змінити", e -> {
+            // Отримуємо обраний елемент
+            OrderModel selected = orderGrid.asSingleSelect().getValue();
+            if (selected != null) {
+                // Реалізуємо логіку зміни
+                Notification.show("Змінити: " + selected.getOrderNumber());
+            } else {
+                Notification.show("Оберіть рядок для зміни.", 3000, Notification.Position.MIDDLE);
+            }
+        });
+
+        contextMenu.addItem("Видалити", e -> {
+            // Отримуємо обраний елемент
+            OrderModel selected = orderGrid.asSingleSelect().getValue();
+            if (selected != null) {
+                // Реалізуємо логіку видалення
+                Notification.show("Видалити: " + selected.getOrderNumber());
+                // Приклад видалення запису
+                orderGrid.setItems((DataProvider<OrderModel, Void>) orderGrid.getListDataView().getItems().filter(order -> !order.equals(selected)));
+            } else {
+                Notification.show("Оберіть рядок для видалення.", 3000, Notification.Position.MIDDLE);
+            }
+        });
+
+// Увімкнення контекстного меню
+        contextMenu.setOpenOnClick(false);
+
 
 
 // Additional Controls Layout on the right side
