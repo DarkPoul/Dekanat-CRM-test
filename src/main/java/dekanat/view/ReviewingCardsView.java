@@ -14,6 +14,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
@@ -92,10 +93,37 @@ public class ReviewingCardsView extends Div {
         numberField.getStyle().set("padding", "0");
         numberField.setWidth("100%");
 
-        studentOrGroupSelect.setLabel("Тип");
-        studentOrGroupSelect.setItems("Один студент", "Вся група");
-        studentOrGroupSelect.setWidth("100%");
-        studentOrGroupSelect.getStyle().set("padding", "0");
+// Создаем Div для обертки радиокнопок
+        Div radioButtonWrapper = new Div();
+        radioButtonWrapper.getStyle().set("border", "1px solid #ddd");
+        radioButtonWrapper.getStyle().set("border-radius", "8px");
+        radioButtonWrapper.getStyle().set("box-shadow", "0 2px 4px rgba(0, 0, 0, 0.1)");
+        radioButtonWrapper.getStyle().set("padding", "20px");
+        radioButtonWrapper.getStyle().set("position", "relative");
+        radioButtonWrapper.getStyle().set("background", "white");
+        radioButtonWrapper.getStyle().set("width", "30%");
+
+// Заголовок для радиокнопок
+        Span radioTitle = new Span("Тип");
+        radioTitle.getStyle().set("position", "absolute");
+        radioTitle.getStyle().set("top", "-10px");
+        radioTitle.getStyle().set("left", "10px");
+        radioTitle.getStyle().set("background", "white");
+        radioTitle.getStyle().set("padding", "0 10px");
+        radioTitle.getStyle().set("font-weight", "bold");
+
+// Создаем радиокнопки
+        RadioButtonGroup<String> radioGroup = new RadioButtonGroup<>();
+        radioGroup.setItems("Один студент", "Вся група");
+        radioGroup.setLabel(null); // Убираем стандартный label
+        radioGroup.getStyle().set("width", "100%");
+        radioGroup.getStyle().set("padding", "10px");
+
+// Добавляем радиокнопки и заголовок в обертку
+        radioButtonWrapper.add(radioTitle, radioGroup);
+
+        radioButtonWrapper.setWidth("100%");
+        radioButtonWrapper.getStyle().set("padding", "0");
 
         submitDataButton.setWidth("100%");
         submitDataButton.getStyle().set("padding", "0");
@@ -103,7 +131,7 @@ public class ReviewingCardsView extends Div {
 
 // Create the additional controls layout
         HorizontalLayout additionalControlsLayout = new HorizontalLayout();
-        additionalControlsLayout.add(typeOfInformationSelect, datePicker, numberField, studentOrGroupSelect, submitDataButton);
+        additionalControlsLayout.add(typeOfInformationSelect, datePicker, numberField, radioButtonWrapper, submitDataButton);
         additionalControlsLayout.setAlignSelf(FlexComponent.Alignment.END, submitDataButton);
         additionalControlsLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
         additionalControlsLayout.setWidth("100%");
@@ -193,7 +221,7 @@ public class ReviewingCardsView extends Div {
 
 // Additional Controls Layout on the right side
         VerticalLayout rightColumn = new VerticalLayout();
-        rightColumn.add(typeOfInformationSelect, datePicker, numberField, studentOrGroupSelect, submitDataButton);
+        rightColumn.add(typeOfInformationSelect, datePicker, numberField, radioButtonWrapper, submitDataButton);
         rightColumn.setAlignItems(FlexComponent.Alignment.END); // Align items to the end of the column
         rightColumn.setWidth("100%"); // Adjust width as needed
         rightColumn.getStyle().set("padding", "0px");
